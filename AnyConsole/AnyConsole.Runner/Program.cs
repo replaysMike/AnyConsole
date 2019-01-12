@@ -22,13 +22,55 @@ namespace AnyConsole.Runner
             console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Color.FromArgb(60, 60, 60));
             console.Start();
 
+            console.WriteLine("FIRST FIRST FIRST FIRST");
             console.WriteLine("Some text to render");
             console.WriteLine("Once upon a time there was a little boy");
             console.WriteLine("and all the christmas elves shouted for joy");
             console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("Some text to render");
+            console.WriteLine("Once upon a time there was a little boy");
+            console.WriteLine("and all the christmas elves shouted for joy");
+            console.WriteLine("Jack and Jill went up a hill to fetch a pail of water.");
+            console.WriteLine("LAST LAST LAST LAST LAST LAST");
 
-            //console.ReadLine();
-            Task.Delay(50000).Wait();
+            console.WaitForClose();
+
         }
     }
 }

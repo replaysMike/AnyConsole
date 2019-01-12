@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,7 +13,8 @@ namespace AnyConsole
     /// </summary>
     public partial class ExtendedConsole : IDisposable
     {
-        private static readonly int _drawingIntervalMs = 200;
+        private static readonly int _drawingIntervalMs = 66;
+        private static readonly int _defaultBufferHistoryLinesLength = 1024;
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
         private StringBuilder _screenLogBuilder = new StringBuilder();
         private IDictionary<string, ICollection<RowContent>> _staticRowContentBuilder = new Dictionary<string, ICollection<RowContent>>();
@@ -26,6 +25,7 @@ namespace AnyConsole
         private bool _isDisposed;
         private ExtendedConsoleConfiguration _config;
         private StaticRowRenderer _staticRowRenderer = new StaticRowRenderer();
+        private int _bufferYCursor = 0;
         
         /// <summary>
         /// Console options
@@ -68,6 +68,14 @@ namespace AnyConsole
             InitializeConsole();
         }
 
+        /// <summary>
+        /// Block until the application has closed
+        /// </summary>
+        public void WaitForClose()
+        {
+            _isRunning.WaitOne();
+        }
+
         public string ReadLine() => Console.ReadLine();
         public void WriteLine() => Console.WriteLine();
         public void WriteLine(string text) => Console.WriteLine(text);
@@ -91,12 +99,13 @@ namespace AnyConsole
             if (_screenLogBuilder == null)
                 return;
             var screenHeaderBuilder = new StringBuilder();
-            var logHistory = new List<ConsoleLogEntry>();
+            var fullLogHistory = new List<ConsoleLogEntry>();
 
             while (!_isRunning.WaitOne(_drawingIntervalMs))
             {
-                logHistory = ProcessBufferedOutput(_screenLogBuilder, logHistory);
-                DrawStaticHeader(screenHeaderBuilder, logHistory);
+                fullLogHistory = ProcessBufferedOutput(_screenLogBuilder, fullLogHistory);
+                var displayHistory = TrimBufferForDisplay(fullLogHistory);
+                DrawStaticHeader(screenHeaderBuilder, displayHistory);
             }
         }
 
@@ -121,11 +130,33 @@ namespace AnyConsole
                         {
                             switch (buffer[z].EventType)
                             {
+                                case KEYBOARD_EVENT:
+                                    //Console.Write($"{buffer[z].KeyEvent.wVirtualKeyCode}");
+                                    switch(buffer[z].KeyEvent.wVirtualKeyCode)
+                                    {
+                                        case 36:// end
+                                            // scroll to start
+                                            _bufferYCursor = _defaultBufferHistoryLinesLength;
+                                            break;
+                                        case 27:// esc
+                                        case 35:// home
+                                            // scroll to end
+                                            _bufferYCursor = 0;
+                                            break;
+                                        case 81:// q
+                                            Dispose();
+                                            break;
+                                    }
+                                    break;
                                 case MOUSE_EVENT:
                                     if (buffer[z].MouseEvent.dwEventFlags == MOUSE_WHEELED)
                                     {
                                         var isWheelUp = buffer[z].MouseEvent.dwButtonState == MOUSE_WHEELUP;
                                         var isWheelDown = buffer[z].MouseEvent.dwButtonState == MOUSE_WHEELDOWN;
+                                        if (isWheelUp)
+                                            _bufferYCursor--;
+                                        if (isWheelDown)
+                                            _bufferYCursor++;
                                     }
                                     break;
                             }
@@ -161,6 +192,17 @@ namespace AnyConsole
             return consoleOutputStringWriter.GetStringBuilder();
         }
 
+        private List<ConsoleLogEntry> TrimBufferForDisplay(List<ConsoleLogEntry> logHistory)
+        {
+            var displayHeight = Console.WindowHeight - 3;
+            if (_bufferYCursor < 0)
+                _bufferYCursor = 0;
+            if (_bufferYCursor > logHistory.Count - displayHeight)
+                _bufferYCursor = logHistory.Count - displayHeight;
+            var skipAmount = logHistory.Count - displayHeight - _bufferYCursor;
+            return logHistory.Skip(skipAmount).Take(displayHeight).ToList();
+        }
+
         /// <summary>
         /// Take in any new stdout content and append it to the internal screen log.
         /// </summary>
@@ -169,15 +211,16 @@ namespace AnyConsole
         /// <returns></returns>
         private List<ConsoleLogEntry> ProcessBufferedOutput(StringBuilder screenLogBuilder, List<ConsoleLogEntry> logHistory)
         {
-            var height = Console.WindowHeight - 3;
             // get the stdout screen buffer and add it to the internal screen buffer
             var pendingLines = screenLogBuilder.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var pendingLine in pendingLines)
                 logHistory.Add(new ConsoleLogEntry(pendingLine, Console.WindowWidth));
 
             // remove older items not shown to the screen as it's not needed anymore
-            var linesToRemove = Math.Abs(height - logHistory.Count);
-            if (logHistory.Count > height && logHistory.Count >= linesToRemove)
+            //var linesToRemove = Math.Abs(height - logHistory.Count);
+            var linesToRemove = Math.Abs(_defaultBufferHistoryLinesLength - logHistory.Count);
+            
+            if (logHistory.Count > _defaultBufferHistoryLinesLength && logHistory.Count >= linesToRemove)
                 logHistory.RemoveRange(0, linesToRemove);
             screenLogBuilder.Clear();
 
@@ -330,7 +373,9 @@ namespace AnyConsole
 
                 _isRunning?.Set();
                 _drawingThread?.Join(500);
+                _inputThread?.Join(500);
                 _drawingThread = null;
+                _inputThread = null;
                 _isRunning?.Dispose();
                 _isRunning = null;
             }

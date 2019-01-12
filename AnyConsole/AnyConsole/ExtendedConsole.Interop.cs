@@ -11,6 +11,7 @@ namespace AnyConsole
         const int STD_OUTPUT_HANDLE = -11;
         const int STD_ERROR_HANDLE = -12;
         const uint MOUSE_MOVED = 0x0001;
+        const ushort KEYBOARD_EVENT = 0x0001;
         const ushort MOUSE_EVENT = 0x0002;
         const uint MOUSE_WHEELED = 0x0004;
         const uint MOUSE_HWHEELED = 0x0008;
