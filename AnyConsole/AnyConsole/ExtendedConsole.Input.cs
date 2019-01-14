@@ -27,23 +27,26 @@ namespace AnyConsole
                             {
                                 case KEYBOARD_EVENT:
                                     var keyEvent = buffer[z].KeyEvent;
-                                    // internal keyboard handling events
                                     var key = (ConsoleKey)keyEvent.wVirtualKeyCode;
-                                    switch (key)
+                                    if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
                                     {
-                                        case ConsoleKey.Home:
-                                            // scroll to start
-                                            _bufferYCursor = _defaultBufferHistoryLinesLength;
-                                            break;
-                                        case ConsoleKey.Escape:
-                                        case ConsoleKey.End:
-                                            // scroll to end
-                                            _bufferYCursor = 0;
-                                            break;
-                                        case ConsoleKey.Q:
-                                            // quit
-                                            Dispose();
-                                            break;
+                                        // internal keyboard handling events
+                                        switch (key)
+                                        {
+                                            case ConsoleKey.Home:
+                                                // scroll to start
+                                                _bufferYCursor = _defaultBufferHistoryLinesLength;
+                                                break;
+                                            case ConsoleKey.Escape:
+                                            case ConsoleKey.End:
+                                                // scroll to end
+                                                _bufferYCursor = 0;
+                                                break;
+                                            case ConsoleKey.Q:
+                                                // quit
+                                                Dispose();
+                                                break;
+                                        }
                                     }
 
                                     OnKeyPress?.Invoke(new KeyPressEventArgs(key, keyEvent.dwControlKeyState));
@@ -67,12 +70,14 @@ namespace AnyConsole
                                         var isWheelDown = mouseEvent.dwButtonState == MOUSE_WHEELDOWN;
                                         if (isWheelUp)
                                         {
-                                            _bufferYCursor--;
+                                            if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
+                                                _bufferYCursor--;
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Up));
                                         }
                                         if (isWheelDown)
                                         {
-                                            _bufferYCursor++;
+                                            if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
+                                                _bufferYCursor++;
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Down));
                                         }
                                     }

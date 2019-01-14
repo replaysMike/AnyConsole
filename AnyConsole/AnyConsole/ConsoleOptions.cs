@@ -13,6 +13,11 @@ namespace AnyConsole
         public RenderOptions RenderOptions { get; set; }
 
         /// <summary>
+        /// Input handling options
+        /// </summary>
+        public InputOptions InputOptions { get; set; }
+
+        /// <summary>
         /// The position of the console window
         /// </summary>
         public Rectangle? Container { get; set; }
@@ -28,8 +33,16 @@ namespace AnyConsole
         /// <summary>
         /// Create a new console options
         /// </summary>
-        /// <param name="renderOptions"></param>
-        public ConsoleOptions(RenderOptions renderOptions) : this(renderOptions, null, null)
+        /// <param name="renderOptions">Rendering options</param>
+        public ConsoleOptions(RenderOptions renderOptions) : this(renderOptions, InputOptions.UseBuiltInKeyOperations, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Create a new console options
+        /// </summary>
+        /// <param name="inputOptions">Input handling options</param>
+        public ConsoleOptions(InputOptions inputOptions) : this(RenderOptions.None, inputOptions, null, null)
         {
         }
 
@@ -37,9 +50,19 @@ namespace AnyConsole
         /// Create a new console options
         /// </summary>
         /// <param name="renderOptions">Rendering options</param>
+        /// <param name="inputOptions">Input handling options</param>
+        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions) : this(renderOptions, inputOptions, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Create a new console options
+        /// </summary>
+        /// <param name="renderOptions">Rendering options</param>
+        /// <param name="inputOptions">Input handling options</param>
         /// <param name="position">Position of the console</param>
         /// <param name="size">Size of the window</param>
-        public ConsoleOptions(RenderOptions renderOptions, Point? position, Size? size)
+        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions, Point? position, Size? size)
         {
             RenderOptions = renderOptions;
             Container = new Rectangle(position ?? Point.Empty, size ?? Size.Empty);
