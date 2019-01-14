@@ -16,7 +16,7 @@ AnyConsole was designed for server service windows, utility tooling and log outp
 ## Usage
 
 ```csharp
-var console = new ExtendedConsole(new ConsoleOptions(RenderOptions.FadeHistory | RenderOptions.HideCursor));
+var console = new ExtendedConsole();
 console.Configure(config =>
 {
     config.SetStaticRow("Header", RowLocation.Top, Color.White, Color.DarkRed);
