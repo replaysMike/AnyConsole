@@ -30,3 +30,29 @@ console.WriteRow("SubHeader", "This is a test application console", ColumnLocati
 console.Start();
 console.WaitForClose();
 ```
+
+## Features
+- Static headers display
+- Text alignment
+- Keyboard/mouse event handling (windows only)
+- Overrides stdout for static display of scrollable content
+- Full color support thanks to Colorful integration!
+- Component rendering (built-in rendered components, and custom components of your own)
+- Text output formatting of logs
+- Multithreaded
+
+## Components
+
+Components allow you to easily add UI elements to your console application, that self update and render. Common usage would be a DateTime component that always displays the current time.
+
+### Built-in components
+- DateTime
+- Memory usage
+- Drive usage
+- Drive activity
+- IP Address
+- Network Bandwidth
+
+### Custom components
+
+Custom components need to simply implement IComponent and it will be rendered to the display. More details to come...
