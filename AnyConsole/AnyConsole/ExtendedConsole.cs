@@ -11,7 +11,7 @@ namespace AnyConsole
     /// <summary>
     /// Extended Console
     /// </summary>
-    public partial class ExtendedConsole : IDisposable
+    public partial class ExtendedConsole : IExtendedConsole, IDisposable
     {
         private static readonly int _drawingIntervalMs = 66;
         private static readonly int _defaultBufferHistoryLinesLength = 1024;
@@ -26,11 +26,24 @@ namespace AnyConsole
         private ExtendedConsoleConfiguration _config;
         private StaticRowRenderer _staticRowRenderer = new StaticRowRenderer();
         private int _bufferYCursor = 0;
-        
+
+        #region Events
+        public delegate void KeyPress(KeyPressEventArgs e);
+        public delegate void MousePress(MousePressEventArgs e);
+        public delegate void MouseScroll(MouseScrollEventArgs e);
+        public delegate void MouseMove(MouseMoveEventArgs e);
+        public event KeyPress OnKeyPress;
+        public event MousePress OnMousePress;
+        public event MouseScroll OnMouseScroll;
+        public event MouseMove OnMouseMove;
+        #endregion
+
+        #region Properties
         /// <summary>
         /// Console options
         /// </summary>
         public ConsoleOptions Options { get; }
+        #endregion
 
         /// <summary>
         /// Create an extended console
@@ -66,6 +79,14 @@ namespace AnyConsole
         public void Start()
         {
             InitializeConsole();
+        }
+
+        /// <summary>
+        /// Close the console
+        /// </summary>
+        public void Close()
+        {
+            _isRunning?.Set();
         }
 
         /// <summary>
@@ -109,63 +130,6 @@ namespace AnyConsole
             }
         }
 
-        private void InputThread()
-        {
-            // if there is no console available, no need to display anything.
-            if (_screenLogBuilder == null)
-                return;
-
-            while (!_isRunning.WaitOne(1))
-            {
-                var hWnd = GetStdHandle(STD_INPUT_HANDLE);
-                var buffer = new INPUT_RECORD[128];
-                var eventsRead = 0U;
-                var success = GetNumberOfConsoleInputEvents(hWnd, out eventsRead);
-                if (eventsRead > 0)
-                {
-                    var keyRead = ReadConsoleInput(hWnd, buffer, (uint)buffer.Length, out eventsRead);
-                    if (keyRead)
-                    {
-                        for (var z = 0; z < eventsRead; z++)
-                        {
-                            switch (buffer[z].EventType)
-                            {
-                                case KEYBOARD_EVENT:
-                                    //Console.Write($"{buffer[z].KeyEvent.wVirtualKeyCode}");
-                                    switch(buffer[z].KeyEvent.wVirtualKeyCode)
-                                    {
-                                        case 36:// end
-                                            // scroll to start
-                                            _bufferYCursor = _defaultBufferHistoryLinesLength;
-                                            break;
-                                        case 27:// esc
-                                        case 35:// home
-                                            // scroll to end
-                                            _bufferYCursor = 0;
-                                            break;
-                                        case 81:// q
-                                            Dispose();
-                                            break;
-                                    }
-                                    break;
-                                case MOUSE_EVENT:
-                                    if (buffer[z].MouseEvent.dwEventFlags == MOUSE_WHEELED)
-                                    {
-                                        var isWheelUp = buffer[z].MouseEvent.dwButtonState == MOUSE_WHEELUP;
-                                        var isWheelDown = buffer[z].MouseEvent.dwButtonState == MOUSE_WHEELDOWN;
-                                        if (isWheelUp)
-                                            _bufferYCursor--;
-                                        if (isWheelDown)
-                                            _bufferYCursor++;
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         private StringBuilder ConfigureConsole()
         {
             if (Console.IsOutputRedirected)
@@ -177,7 +141,7 @@ namespace AnyConsole
                 // anything we want to display to the screen has to be done through stderr
                 PositionConsoleWindow();
 
-                if(Options.Container.HasValue && Options.Container.Value.Size.Width > 0 && Options.Container.Value.Size.Height > 0)
+                if (Options.Container.HasValue && Options.Container.Value.Size.Width > 0 && Options.Container.Value.Size.Height > 0)
                     Console.SetWindowSize(Options.Container.Value.Size.Width, Options.Container.Value.Size.Height);
                 Console.BufferHeight = Console.WindowHeight;
                 Console.SetOut(consoleOutputStringWriter);
@@ -219,7 +183,7 @@ namespace AnyConsole
             // remove older items not shown to the screen as it's not needed anymore
             //var linesToRemove = Math.Abs(height - logHistory.Count);
             var linesToRemove = Math.Abs(_defaultBufferHistoryLinesLength - logHistory.Count);
-            
+
             if (logHistory.Count > _defaultBufferHistoryLinesLength && logHistory.Count >= linesToRemove)
                 logHistory.RemoveRange(0, linesToRemove);
             screenLogBuilder.Clear();
@@ -234,7 +198,7 @@ namespace AnyConsole
             var cursorLeft = Console.CursorLeft;
             var cursorTop = Console.CursorTop;
             var width = Console.WindowWidth;
-            
+
             Console.CursorVisible = !Options.RenderOptions.HasFlag(RenderOptions.HideCursor);
             Console.SetCursorPosition(0, 0);
 
@@ -371,7 +335,7 @@ namespace AnyConsole
             {
                 DrawShutdown();
 
-                _isRunning?.Set();
+                Close();
                 _drawingThread?.Join(500);
                 _inputThread?.Join(500);
                 _drawingThread = null;

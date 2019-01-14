@@ -10,6 +10,7 @@ namespace AnyConsole
         const int STD_INPUT_HANDLE = -10;
         const int STD_OUTPUT_HANDLE = -11;
         const int STD_ERROR_HANDLE = -12;
+        const uint MOUSE_BUTTON = 0x0000;
         const uint MOUSE_MOVED = 0x0001;
         const ushort KEYBOARD_EVENT = 0x0001;
         const ushort MOUSE_EVENT = 0x0002;
@@ -110,35 +111,9 @@ namespace AnyConsole
             [FieldOffset(4)]
             public uint dwButtonState;
             [FieldOffset(8)]
-            public uint dwControlKeyState;
+            public ControlKeyState dwControlKeyState;
             [FieldOffset(12)]
             public uint dwEventFlags;
-        }
-
-        [Flags]
-        public enum MouseEventFlags
-        {
-            LEFTDOWN = 0x00000002,
-            LEFTUP = 0x00000004,
-            MIDDLEDOWN = 0x00000020,
-            MIDDLEUP = 0x00000040,
-            MOVE = 0x00000001,
-            ABSOLUTE = 0x00008000,
-            RIGHTDOWN = 0x00000008,
-            RIGHTUP = 0x00000010
-        }
-
-        public enum ControlKeyState
-        {
-            RIGHT_ALT_PRESSED = 1,
-            LEFT_ALT_PRESSED = 2,
-            RIGHT_CTRL_PRESSED = 4,
-            LEFT_CTRL_PRESSED = 8,
-            SHIFT_PRESSED = 16,
-            NUMLOCK_ON = 32,
-            SCROLLLOCK_ON = 64,
-            CAPSLOCK_ON = 128,
-            ENHANCED_KEY = 256,
         }
 
         [StructLayout(LayoutKind.Sequential)]
