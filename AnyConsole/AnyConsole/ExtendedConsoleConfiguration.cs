@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace AnyConsole
 {
@@ -10,11 +12,13 @@ namespace AnyConsole
     {
         internal LogHistoryContainer LogHistoryContainer { get; }
         internal ICollection<StaticRowConfig> StaticRows { get; }
+        internal IDictionary<string, Type> CustomComponents { get; }
         internal WindowFrame WindowFrame { get; set; }
 
         public ExtendedConsoleConfiguration()
         {
             StaticRows = new List<StaticRowConfig>();
+            CustomComponents = new Dictionary<string, Type>();
             LogHistoryContainer = new LogHistoryContainer(RowLocation.Top, 0);
             WindowFrame = WindowFrame.None;
         }
@@ -27,6 +31,33 @@ namespace AnyConsole
         public void SetWindowFrame(Color color, int size)
         {
             WindowFrame = new WindowFrame(color, size);
+        }
+
+        /// <summary>
+        /// Register a custom component
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="component"></param>
+        public void RegisterComponent(string name, Type component)
+        {
+            if (!component.GetInterfaces().Contains(typeof(IComponent)))
+                throw new ArgumentException(nameof(component), $"Type must implement IComponent");
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentNullException(nameof(name));
+            CustomComponents.Add(name, component);
+        }
+
+        /// <summary>
+        /// Register a custom component
+        /// </summary>
+        /// <typeparam name="TComponent">Type implementing IComponent</typeparam>
+        /// <param name="name"></param>
+        public void RegisterComponent<TComponent>(string name)
+            where TComponent : IComponent
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentNullException(nameof(name));
+            CustomComponents.Add(name, typeof(TComponent));
         }
 
         /// <summary>

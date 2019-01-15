@@ -4,15 +4,23 @@ namespace AnyConsole
 {
     public partial class ExtendedConsole
     {
+        
+
         private void InputThread()
         {
             // if there is no console available, no need to display anything.
             if (_screenLogBuilder == null)
                 return;
+            // get pointer to the console
+            var hWnd = GetStdHandle(STD_INPUT_HANDLE);
 
-            while (!_isRunning.WaitOne(1))
+            // disable quick edit mode as it steals mouse input
+            var wasQuickEditModeEnabled = IsQuickEditModeEnabled(hWnd);
+            if (wasQuickEditModeEnabled)
+                DisableQuickEditMode(hWnd);
+
+            while (!_isRunning.WaitOne(100))
             {
-                var hWnd = GetStdHandle(STD_INPUT_HANDLE);
                 var buffer = new INPUT_RECORD[128];
                 var eventsRead = 0U;
                 var success = GetNumberOfConsoleInputEvents(hWnd, out eventsRead);
@@ -44,6 +52,7 @@ namespace AnyConsole
                                                 break;
                                             case ConsoleKey.Q:
                                                 // quit
+                                                Close();
                                                 Dispose();
                                                 break;
                                         }
@@ -71,13 +80,19 @@ namespace AnyConsole
                                         if (isWheelUp)
                                         {
                                             if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
-                                                _bufferYCursor--;
+                                            {
+                                                if(_bufferYCursor > 0)
+                                                    _bufferYCursor--;
+                                            }
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Up));
                                         }
                                         if (isWheelDown)
                                         {
                                             if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
-                                                _bufferYCursor++;
+                                            {
+                                                if(_bufferYCursor < fullLogHistory.Count - LogDisplayHeight)
+                                                    _bufferYCursor++;
+                                            }
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Down));
                                         }
                                     }
@@ -88,6 +103,9 @@ namespace AnyConsole
                     }
                 }
             }
+
+            if (wasQuickEditModeEnabled)
+                EnableQuickEditMode(hWnd);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace AnyConsole
         const uint MOUSE_HWHEELED = 0x0008;
         const uint MOUSE_WHEELUP = 0xFF880000;
         const uint MOUSE_WHEELDOWN = 0x00780000;
+        const uint ENABLE_QUICK_EDIT = 0x0040;
 
         [DllImport("kernel32.dll")]
         static extern IntPtr GetConsoleWindow();
@@ -46,6 +47,70 @@ namespace AnyConsole
 
         [DllImport("kernel32.dll")]
         static extern bool GetNumberOfConsoleInputEvents(IntPtr hConsoleInput, out uint lpNumberOfEvents);
+
+        [DllImport("kernel32.dll")]
+        static extern bool GetConsoleMode(IntPtr hConsoleInput, out uint lpMode);
+
+        [DllImport("kernel32.dll")]
+        static extern bool SetConsoleMode(IntPtr hConsoleInput, uint dwMode);
+
+        /// <summary>
+        /// True if quick edit mode is enabled
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
+        private bool IsQuickEditModeEnabled(IntPtr hWnd)
+        {
+            var consoleMode = 0U;
+            GetConsoleMode(hWnd, out consoleMode);
+            return (consoleMode & ENABLE_QUICK_EDIT) == ENABLE_QUICK_EDIT;
+        }
+
+        /// <summary>
+        /// Disable Quick Edit mode
+        /// </summary>
+        /// <param name="hWnd"></param>
+        private void DisableQuickEditMode(IntPtr hWnd)
+        {
+            var consoleMode = 0U;
+            if (GetConsoleMode(hWnd, out consoleMode))
+            {
+                consoleMode &= ~ENABLE_QUICK_EDIT;
+                SetConsoleMode(hWnd, consoleMode);
+            }
+        }
+
+        /// <summary>
+        /// Enable Quick Edit mode
+        /// </summary>
+        /// <param name="hWnd"></param>
+        private void EnableQuickEditMode(IntPtr hWnd)
+        {
+            var consoleMode = 0U;
+            if (GetConsoleMode(hWnd, out consoleMode))
+            {
+                consoleMode &= ENABLE_QUICK_EDIT;
+                SetConsoleMode(hWnd, consoleMode);
+            }
+        }
+
+        [DllImport("kernel32")]
+        public static extern void GetSystemInfo(ref SYSTEM_INFO pSI);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SYSTEM_INFO
+        {
+            public uint dwOemId;
+            public uint dwPageSize;
+            public uint lpMinimumApplicationAddress;
+            public uint lpMaximumApplicationAddress;
+            public uint dwActiveProcessorMask;
+            public uint dwNumberOfProcessors;
+            public uint dwProcessorType;
+            public uint dwAllocationGranularity;
+            public uint dwProcessorLevel;
+            public uint dwProcessorRevision;
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct INPUT_RECORD

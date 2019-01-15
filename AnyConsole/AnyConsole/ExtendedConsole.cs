@@ -18,14 +18,17 @@ namespace AnyConsole
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
         private StringBuilder _screenLogBuilder = new StringBuilder();
         private IDictionary<string, ICollection<RowContent>> _staticRowContentBuilder = new Dictionary<string, ICollection<RowContent>>();
-        private ICollection<ConsoleLogEntry> _logHistory = new List<ConsoleLogEntry>();
         private Thread _drawingThread;
         private Thread _inputThread;
         private ManualResetEvent _isRunning;
         private bool _isDisposed;
         private ExtendedConsoleConfiguration _config;
-        private StaticRowRenderer _staticRowRenderer = new StaticRowRenderer();
-        private int _bufferYCursor = 0;
+        private StaticRowRenderer _staticRowRenderer;
+        private ComponentRenderer _componentRenderer;
+        internal int _bufferYCursor = 0;
+        internal ICollection<ConsoleLogEntry> _logHistory = new List<ConsoleLogEntry>();
+        internal List<ConsoleLogEntry> fullLogHistory;
+        internal int LogDisplayHeight { get { return Console.WindowHeight - 3; } }
 
         #region Events
         public delegate void KeyPress(KeyPressEventArgs e);
@@ -71,6 +74,11 @@ namespace AnyConsole
             var consoleConfiguration = new ExtendedConsoleConfiguration();
             config.Invoke(consoleConfiguration);
             _config = consoleConfiguration;
+
+            _componentRenderer = new ComponentRenderer(this);
+            foreach (var component in _config.CustomComponents)
+                _componentRenderer.RegisterComponent(component.Key, component.Value);
+            _staticRowRenderer = new StaticRowRenderer(_componentRenderer, Options);
         }
 
         /// <summary>
@@ -86,7 +94,8 @@ namespace AnyConsole
         /// </summary>
         public void Close()
         {
-            _isRunning?.Set();
+            if(!_isDisposed)
+                _isRunning?.Set();
         }
 
         /// <summary>
@@ -107,10 +116,10 @@ namespace AnyConsole
             // initialize the database update threads
             _isRunning = new ManualResetEvent(false);
             _inputThread = new Thread(new ThreadStart(InputThread));
-            _inputThread.IsBackground = true;
+            //_inputThread.IsBackground = true;
             _inputThread.Start();
             _drawingThread = new Thread(new ThreadStart(DrawingThread));
-            _drawingThread.IsBackground = true;
+            //_drawingThread.IsBackground = true;
             _drawingThread.Start();
         }
 
@@ -120,8 +129,7 @@ namespace AnyConsole
             if (_screenLogBuilder == null)
                 return;
             var screenHeaderBuilder = new StringBuilder();
-            var fullLogHistory = new List<ConsoleLogEntry>();
-
+            fullLogHistory = new List<ConsoleLogEntry>();
             while (!_isRunning.WaitOne(_drawingIntervalMs))
             {
                 fullLogHistory = ProcessBufferedOutput(_screenLogBuilder, fullLogHistory);
@@ -147,6 +155,7 @@ namespace AnyConsole
                 Console.SetOut(consoleOutputStringWriter);
                 Console.BackgroundColor = Style.Background;
                 Console.Clear();
+                Console.CursorVisible = !Options.RenderOptions.HasFlag(RenderOptions.HideCursor);
             }
             catch (Exception ex)
             {
@@ -158,13 +167,12 @@ namespace AnyConsole
 
         private List<ConsoleLogEntry> TrimBufferForDisplay(List<ConsoleLogEntry> logHistory)
         {
-            var displayHeight = Console.WindowHeight - 3;
             if (_bufferYCursor < 0)
                 _bufferYCursor = 0;
-            if (_bufferYCursor > logHistory.Count - displayHeight)
-                _bufferYCursor = logHistory.Count - displayHeight;
-            var skipAmount = logHistory.Count - displayHeight - _bufferYCursor;
-            return logHistory.Skip(skipAmount).Take(displayHeight).ToList();
+            if (_bufferYCursor > logHistory.Count - LogDisplayHeight)
+                _bufferYCursor = logHistory.Count - LogDisplayHeight;
+            var skipAmount = logHistory.Count - LogDisplayHeight - _bufferYCursor;
+            return logHistory.Skip(skipAmount).Take(LogDisplayHeight).ToList();
         }
 
         /// <summary>
@@ -199,7 +207,6 @@ namespace AnyConsole
             var cursorTop = Console.CursorTop;
             var width = Console.WindowWidth;
 
-            Console.CursorVisible = !Options.RenderOptions.HasFlag(RenderOptions.HideCursor);
             Console.SetCursorPosition(0, 0);
 
             // write the static row headers
@@ -227,7 +234,6 @@ namespace AnyConsole
 
             // restore cursor
             Console.SetCursorPosition(GetXPosition(_config.LogHistoryContainer, 0), GetYPosition(_config.LogHistoryContainer, 0));
-            Console.CursorVisible = true;
             // write the screen log buffer
             var i = 0;
             var linesToFade = Options.RenderOptions.HasFlag(RenderOptions.FadeHistory) ? 6 : 0;
@@ -260,8 +266,6 @@ namespace AnyConsole
 
             if (_config.WindowFrame.Size > 0)
                 WindowFrameRenderer.Render(_config.WindowFrame, stdout);
-
-            Console.CursorVisible = !Options.RenderOptions.HasFlag(RenderOptions.HideCursor);
         }
 
         private int GetXPosition(LogHistoryContainer container, int currentOffset)
@@ -334,14 +338,29 @@ namespace AnyConsole
             if (isDisposing)
             {
                 DrawShutdown();
-
+                _componentRenderer.Dispose();
                 Close();
-                _drawingThread?.Join(500);
-                _inputThread?.Join(500);
+                try
+                {
+                    if (_drawingThread.ThreadState == ThreadState.Running && !_drawingThread.Join(500))
+                        _drawingThread.Abort();
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // ignore thread-abort errors on unsupported platforms
+                }
+                try
+                {
+                    if (_inputThread.ThreadState == ThreadState.Running && !_inputThread.Join(500))
+                        _inputThread.Abort();
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // ignore thread-abort errors on unsupported platforms
+                }
                 _drawingThread = null;
                 _inputThread = null;
-                _isRunning?.Dispose();
-                _isRunning = null;
+                //_isRunning?.Dispose();
             }
             _isDisposed = true;
         }

@@ -23,6 +23,11 @@ namespace AnyConsole
         public Rectangle? Container { get; set; }
 
         /// <summary>
+        /// The spacing width between text components (default: 1 char)
+        /// </summary>
+        public int TextSpacing { get; set; }
+
+        /// <summary>
         /// Create a new console options
         /// </summary>
         public ConsoleOptions() : this(RenderOptions.None)
@@ -34,7 +39,7 @@ namespace AnyConsole
         /// Create a new console options
         /// </summary>
         /// <param name="renderOptions">Rendering options</param>
-        public ConsoleOptions(RenderOptions renderOptions) : this(renderOptions, InputOptions.UseBuiltInKeyOperations, null, null)
+        public ConsoleOptions(RenderOptions renderOptions) : this(renderOptions, InputOptions.UseBuiltInKeyOperations, 1, null, null)
         {
         }
 
@@ -42,7 +47,7 @@ namespace AnyConsole
         /// Create a new console options
         /// </summary>
         /// <param name="inputOptions">Input handling options</param>
-        public ConsoleOptions(InputOptions inputOptions) : this(RenderOptions.None, inputOptions, null, null)
+        public ConsoleOptions(InputOptions inputOptions) : this(RenderOptions.None, inputOptions, 1, null, null)
         {
         }
 
@@ -51,7 +56,7 @@ namespace AnyConsole
         /// </summary>
         /// <param name="renderOptions">Rendering options</param>
         /// <param name="inputOptions">Input handling options</param>
-        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions) : this(renderOptions, inputOptions, null, null)
+        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions) : this(renderOptions, inputOptions, 1, null, null)
         {
         }
 
@@ -62,8 +67,9 @@ namespace AnyConsole
         /// <param name="inputOptions">Input handling options</param>
         /// <param name="position">Position of the console</param>
         /// <param name="size">Size of the window</param>
-        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions, Point? position, Size? size)
+        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions, int textSpacing, Point? position, Size? size)
         {
+            TextSpacing = textSpacing;
             RenderOptions = renderOptions;
             Container = new Rectangle(position ?? Point.Empty, size ?? Size.Empty);
         }

@@ -10,6 +10,16 @@
         Date,
         DateUtc,
         Time,
-        TimeUtc
+        TimeUtc,
+        MemoryUsed,
+        MemoryFree,
+        DiskUsed,
+        DiskFree,
+        CpuUsage,
+        IP,
+        NetworkTransfer,
+        CurrentBufferLine,
+        TotalLinesBuffered,
+        Custom
     }
 }

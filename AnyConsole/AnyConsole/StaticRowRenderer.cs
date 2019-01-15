@@ -9,13 +9,26 @@ namespace AnyConsole
     public class StaticRowRenderer
     {
         /// <summary>
+        /// The renderer responsible for rendering components
+        /// </summary>
+        internal ComponentRenderer ComponentRenderer { get; }
+
+        internal ConsoleOptions ConsoleOptions { get; }
+
+        public StaticRowRenderer(ComponentRenderer componentRenderer, ConsoleOptions options)
+        {
+            ComponentRenderer = componentRenderer;
+            ConsoleOptions = options;
+        }
+
+        /// <summary>
         /// Render an empty row
         /// </summary>
         /// <param name="row"></param>
         /// <returns></returns>
         public StaticRowStream Build(StaticRowConfig row)
         {
-            var stream = new StaticRowStream(row, null);
+            var stream = new StaticRowStream(this, row, null);
             return stream;
         }
 
@@ -27,7 +40,7 @@ namespace AnyConsole
         /// <returns></returns>
         public StaticRowStream Build(StaticRowConfig row, ICollection<RowContent> content)
         {
-            var stream = new StaticRowStream(row, content);
+            var stream = new StaticRowStream(this, row, content);
 
             return stream;
         }
@@ -37,8 +50,13 @@ namespace AnyConsole
     {
         private StaticRowConfig _row;
         private readonly ICollection<RowContent> _content;
-        public StaticRowStream(StaticRowConfig row, ICollection<RowContent> content)
+        private StaticRowRenderer _renderer;
+        private int _leftMargin = 0;
+        private int _rightMargin = 0;
+
+        public StaticRowStream(StaticRowRenderer renderer, StaticRowConfig row, ICollection<RowContent> content)
         {
+            _renderer = renderer;
             _row = row;
             _content = content;
         }
@@ -76,13 +94,32 @@ namespace AnyConsole
                 {
                     Console.ForegroundColor = item.ForegroundColor ?? _row.ForegroundColor ?? originalForeColor;
                     Console.BackgroundColor = item.BackgroundColor ?? _row.BackgroundColor ?? originalBackColor;
-                    var x = GetXPosition(item.Location, xPosition);
+
+                    // render the component
+                    string renderedContent = null;
+                    if(item.ContentType == RowContent.ContentTypes.Static)
+                        renderedContent = item.StaticContent;
+                    else if(item.ContentType == RowContent.ContentTypes.Component)
+                    {
+                        renderedContent = _renderer.ComponentRenderer.Render(item.Component, item.ComponentName);
+                    }
+
+                    if (item.Location == ColumnLocation.Right)
+                        renderedContent = new string(' ', _renderer.ConsoleOptions.TextSpacing) + renderedContent;
+                    else
+                        renderedContent = renderedContent + new string(' ', _renderer.ConsoleOptions.TextSpacing);
+
+                    builder.Append(renderedContent);
+
                     y = GetYPosition(_row.Location, _row.Index, yPosition);
-                    var str = item.Render.Invoke();
-                    builder.Append(str);
+                    var x = GetXPosition(item.Location, y, renderedContent.Length, _leftMargin, _rightMargin);
                     Console.SetCursorPosition(x, y);
-                    output.Write(str);
-                    xPosition += str.Length;
+                    output.Write(renderedContent);
+                    xPosition += renderedContent.Length;
+                    if (item.Location == ColumnLocation.Right)
+                        _rightMargin += renderedContent.Length;
+                    else
+                        _leftMargin += renderedContent.Length;
                 }
             }
             Console.ForegroundColor = originalForeColor;
@@ -92,17 +129,17 @@ namespace AnyConsole
             return builder.ToString();
         }
 
-        private int GetXPosition(ColumnLocation loc, int currentOffset)
+        private int GetXPosition(ColumnLocation loc, int y, int contentWidth, int leftMargin, int rightMargin)
         {
             var width = Console.WindowWidth;
             var x = 0;
             switch (loc)
             {
                 case ColumnLocation.Left:
-                    x = currentOffset;
+                    x = leftMargin;
                     break;
                 case ColumnLocation.Right:
-                    x = width - currentOffset - 1;
+                    x = width - contentWidth - rightMargin - (y == Console.WindowHeight - 1 ? 1 : 0);
                     break;
                 case ColumnLocation.Center:
                     break;
