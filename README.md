@@ -1,4 +1,10 @@
 # AnyConsole
+[![nuget](https://img.shields.io/nuget/v/AnyConsole.svg)](https://www.nuget.org/packages/AnyConsole/)
+[![nuget](https://img.shields.io/nuget/dt/AnyConsole.svg)](https://www.nuget.org/packages/AnyConsole/)
+[![Build status](https://ci.appveyor.com/api/projects/status/xr7gebcdins0hs4f?svg=true)](https://ci.appveyor.com/project/MichaelBrown/anyconsole)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c04b064c4a2141a48cd148cfb08d57d6)](https://www.codacy.com/app/replaysMike/AnyConsole?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=replaysMike/AnyConsole&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/c04b064c4a2141a48cd148cfb08d57d6)](https://www.codacy.com/app/replaysMike/AnyConsole?utm_source=github.com&utm_medium=referral&utm_content=replaysMike/AnyConsole&utm_campaign=Badge_Coverage)
+
 A CSharp library that gives you better console handling for that classic ASCII look.
 
 ## Description
