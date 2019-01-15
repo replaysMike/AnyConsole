@@ -31,8 +31,9 @@
         /// <summary>
         /// Called once upon initialization
         /// </summary>
+        /// <param name="dataContext">A context you can use to transfer data</param>
         /// <param name="name">Name of the component</param>
         /// <param name="console">A reference to the console</param>
-        void Setup(string name, IExtendedConsole console);
+        void Setup(ConsoleDataContext dataContext, string name, IExtendedConsole console);
     }
 }

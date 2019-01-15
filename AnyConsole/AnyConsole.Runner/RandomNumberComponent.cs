@@ -12,6 +12,7 @@ namespace AnyConsole.Runner
         private int _randomNumber;
         private string _name;
         private IExtendedConsole _console;
+        private ConsoleDataContext _dataContext;
 
         public bool HasUpdates { get { return _hasUpdates; } }
 
@@ -31,8 +32,9 @@ namespace AnyConsole.Runner
         /// Called once on startup
         /// </summary>
         /// <param name="name"></param>
-        public void Setup(string name, IExtendedConsole console)
+        public void Setup(ConsoleDataContext dataContext, string name, IExtendedConsole console)
         {
+            _dataContext = dataContext;
             // we don't need these but we will store them
             _name = name;
             _console = console;

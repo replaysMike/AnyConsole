@@ -17,14 +17,17 @@ namespace AnyConsole
         private bool _isDisposed;
         private ManualResetEvent _isRunning = new ManualResetEvent(false);
         private Thread _componentUpdateThread;
+        private ConsoleDataContext _dataContext;
 
-        public ComponentRenderer(IExtendedConsole console)
+        public ComponentRenderer(IExtendedConsole console, ConsoleDataContext dataContext)
         {
             _console = console;
+            _dataContext = dataContext;
+            
             _isRunning.Reset();
+            InitializeBuiltInComponents();
             _componentUpdateThread = new Thread(new ThreadStart(ComponentUpdateThread));
             _componentUpdateThread.Start();
-            InitializeBuiltInComponents();
         }
 
         private void InitializeBuiltInComponents()
@@ -36,7 +39,7 @@ namespace AnyConsole
             _builtInComponents.Add(typeof(CpuUsageComponent), new CpuUsageComponent());
             _builtInComponents.Add(typeof(IPAddressComponent), new IPAddressComponent());
             foreach (var builtInComponent in _builtInComponents)
-                builtInComponent.Value.Setup(builtInComponent.GetType().Name, _console);
+                builtInComponent.Value.Setup(_dataContext, builtInComponent.GetType().Name, _console);
         }
 
 
@@ -59,7 +62,7 @@ namespace AnyConsole
                 throw new ArgumentException(nameof(componentType), $"Type must implement IComponent");
             var component = Activator.CreateInstance(componentType) as IComponent;
             // call setup on the component
-            component.Setup(name, _console);
+            component.Setup(_dataContext, name, _console);
             _customComponents.Add(name, component);
         }
 

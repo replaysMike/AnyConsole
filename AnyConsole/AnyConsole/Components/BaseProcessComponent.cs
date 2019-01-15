@@ -10,14 +10,16 @@ namespace AnyConsole.Components
 
         public Process CurrentProcess { get { return Process.GetCurrentProcess(); } }
 
+        private ConsoleDataContext _data;
+
         public virtual string Render()
         {
             return string.Empty;
         }
 
-        public virtual void Setup(string name, IExtendedConsole console)
+        public virtual void Setup(ConsoleDataContext data, string name, IExtendedConsole console)
         {
-            
+            _data = data;
         }
 
         public virtual void Tick(ulong tickCount)

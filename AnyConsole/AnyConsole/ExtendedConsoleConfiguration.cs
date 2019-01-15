@@ -14,6 +14,7 @@ namespace AnyConsole
         internal ICollection<StaticRowConfig> StaticRows { get; }
         internal IDictionary<string, Type> CustomComponents { get; }
         internal WindowFrame WindowFrame { get; set; }
+        internal ConsoleDataContext DataContext { get; set; }
 
         public ExtendedConsoleConfiguration()
         {
@@ -21,6 +22,15 @@ namespace AnyConsole
             CustomComponents = new Dictionary<string, Type>();
             LogHistoryContainer = new LogHistoryContainer(RowLocation.Top, 0);
             WindowFrame = WindowFrame.None;
+        }
+
+        /// <summary>
+        /// Set the data context to use for sending data to custom components
+        /// </summary>
+        /// <param name="context"></param>
+        public void SetDataContext(ConsoleDataContext context)
+        {
+            DataContext = context;
         }
 
         /// <summary>

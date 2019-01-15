@@ -75,7 +75,7 @@ namespace AnyConsole
             config.Invoke(consoleConfiguration);
             _config = consoleConfiguration;
 
-            _componentRenderer = new ComponentRenderer(this);
+            _componentRenderer = new ComponentRenderer(this, _config.DataContext);
             foreach (var component in _config.CustomComponents)
                 _componentRenderer.RegisterComponent(component.Key, component.Value);
             _staticRowRenderer = new StaticRowRenderer(_componentRenderer, Options);
