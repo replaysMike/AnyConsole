@@ -1,7 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net45;netstandard2.0;net46;net461;net462;net47</TargetFrameworks>
+    <Authors>Michael Brown</Authors>
+    <Company>Refactor Software</Company>
+    <Description>A CSharp library that gives you better console handling for that classic ASCII look.</Description>
+    <PackageReleaseNotes>A CSharp library that gives you better console handling for that classic ASCII look.</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/replaysMike/AnyConsole</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/replaysMike/AnyConsole</RepositoryUrl>
+    <PackageTags>console color colour static header ascii refactor software michael brown</PackageTags>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard2.0' OR '$(TargetFramework)'=='net46' OR '$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net462'">
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net47'">
+    <DefineConstants></DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
