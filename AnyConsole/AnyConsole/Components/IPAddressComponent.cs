@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -10,7 +9,7 @@ namespace AnyConsole.Components
         private string _value;
         private ICollection<IPAddress> _ipAddress;
 
-        public IPAddressComponent()
+        public IPAddressComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
             UpdateIP();
         }

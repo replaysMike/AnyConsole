@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace AnyConsole
     /// </summary>
     public partial class ExtendedConsole : IExtendedConsole, IDisposable
     {
-        private static readonly int _drawingIntervalMs = 66;
+        private static readonly int _drawingIntervalMs = 100;
         private static readonly int _defaultBufferHistoryLinesLength = 1024;
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
         private StringBuilder _screenLogBuilder = new StringBuilder();
@@ -27,9 +28,13 @@ namespace AnyConsole
         private ComponentRenderer _componentRenderer;
         internal int _bufferYCursor = 0;
         internal ICollection<ConsoleLogEntry> _logHistory = new List<ConsoleLogEntry>();
-        internal List<ConsoleLogEntry> fullLogHistory;
+        internal List<ConsoleLogEntry> _fullLogHistory;
         internal int LogDisplayHeight { get { return Console.WindowHeight - 3; } }
         private bool _hasLogUpdates = false;
+        private bool _isSearchEnabled = false;
+        private string _searchString;
+        private int _searchLineIndex = -1;
+        private SemaphoreSlim _historyLock = new SemaphoreSlim(1, 1);
 
         #region Events
         public delegate void KeyPress(KeyPressEventArgs e);
@@ -95,7 +100,7 @@ namespace AnyConsole
         /// </summary>
         public void Close()
         {
-            if(!_isDisposed)
+            if (!_isDisposed)
                 _isRunning?.Set();
         }
 
@@ -130,11 +135,20 @@ namespace AnyConsole
             if (_screenLogBuilder == null)
                 return;
             var screenHeaderBuilder = new StringBuilder();
-            fullLogHistory = new List<ConsoleLogEntry>();
+            var displayHistory = new List<ConsoleLogEntry>();
+            _fullLogHistory = new List<ConsoleLogEntry>();
             while (!_isRunning.WaitOne(_drawingIntervalMs))
             {
-                fullLogHistory = ProcessBufferedOutput(_screenLogBuilder, fullLogHistory);
-                var displayHistory = TrimBufferForDisplay(fullLogHistory);
+                _historyLock.Wait();
+                try
+                {
+                    _fullLogHistory = ProcessBufferedOutput(_screenLogBuilder, _fullLogHistory);
+                    displayHistory = TrimBufferForDisplay(_fullLogHistory);
+                }
+                finally
+                {
+                    _historyLock.Release();
+                }
                 DrawStaticHeader(screenHeaderBuilder, displayHistory, _hasLogUpdates);
             }
         }
@@ -188,8 +202,9 @@ namespace AnyConsole
             var pendingLines = screenLogBuilder.ToString().Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var pendingLine in pendingLines)
             {
-                logHistory.Add(new ConsoleLogEntry(pendingLine, Console.WindowWidth));
+                logHistory.Add(new ConsoleLogEntry(pendingLine));
                 _hasLogUpdates = true;
+                // if we are currently viewing the log history, offset it when new lines are added to prevent scrolling
                 if (_bufferYCursor != 0)
                     _bufferYCursor++;
             }
@@ -291,10 +306,11 @@ namespace AnyConsole
                     }
 
                     Console.ForegroundColor = logForegroundColor;
-                    var spaces = (Console.WindowWidth - className.Length - rowPrefix.Length - logLine.TruncatedLine.Length);
+                    var truncatedLine = logLine.GetTruncatedLine(Console.BufferWidth, rowPrefix.Length);
+                    var spaces = (Console.WindowWidth - className.Length - rowPrefix.Length - truncatedLine.Length);
                     if (spaces < 0)
                         spaces = 0;
-                    stdout.Write(logLine.TruncatedLine + new string(' ', spaces));
+                    stdout.Write(truncatedLine + new string(' ', spaces));
                     i++;
                 }
             }
@@ -349,6 +365,102 @@ namespace AnyConsole
                 SetWindowPlacement(hWnd, ref wp);
                 SetForegroundWindow(hWnd);
             }
+        }
+
+        private void ToggleSearch()
+        {
+            _isSearchEnabled = !_isSearchEnabled;
+            if (!_isSearchEnabled)
+            {
+                _searchString = string.Empty;
+                _searchLineIndex = -1;
+            }
+            SetSearch(_isSearchEnabled);
+        }
+
+        private void SetSearch(bool isSearchEnabled)
+        {
+            _config.DataContext.SetData<bool>("IsSearchEnabled", isSearchEnabled);
+        }
+
+        private void SetSearchString(string str)
+        {
+            _config.DataContext.SetData<string>("SearchString", str);
+        }
+
+        private void AddSearchString(char c)
+        {
+            if (c == 8 && _searchString.Length > 0)
+            {
+                _searchString = _searchString.Substring(0, _searchString.Length - 1);
+                SetSearchString(_searchString);
+            }
+            if (c >= 32 && c <= 126)
+            {
+                _searchString = _searchString + c;
+                SetSearchString(_searchString);
+            }
+        }
+
+        private IDictionary<int, ConsoleLogEntry> ComputeSearchMatches()
+        {
+            var matches = new Dictionary<int, ConsoleLogEntry>();
+            for (var i = 0; i < _fullLogHistory.Count; i++)
+            {
+                var index = CultureInfo.CurrentCulture.CompareInfo.IndexOf(_fullLogHistory[i].OriginalLine, _searchString, CompareOptions.IgnoreCase);
+                if (index >= 0)
+                    matches.Add(i, _fullLogHistory[i]);
+            }
+            _config.DataContext.SetData<int>("SearchMatches", matches.Count);
+            return matches;
+        }
+
+        private void FindNext()
+        {
+            var matches = ComputeSearchMatches();
+            var hasMatches = matches.Any();
+            // wrap the search
+            if (hasMatches && matches.Count >= _searchLineIndex)
+            {
+                // get next match
+                _searchLineIndex++;
+            }
+
+            if (hasMatches && _searchLineIndex >= matches.Count)
+                _searchLineIndex = 0; // wrap to first match
+
+            // compute the Y cursor
+            if (_searchLineIndex >= 0)
+            {
+                var historyLineNumber = matches.Skip(_searchLineIndex).Select(x => x.Key).FirstOrDefault();
+                if (_fullLogHistory.Count - historyLineNumber - LogDisplayHeight >= 0)
+                    _bufferYCursor = _fullLogHistory.Count - historyLineNumber - LogDisplayHeight;
+            }
+            _config.DataContext.SetData<int>("SearchIndex", _searchLineIndex);
+        }
+
+        private void FindPrevious()
+        {
+            var matches = ComputeSearchMatches();
+            var hasMatches = matches.Any();
+            if (hasMatches && _searchLineIndex >= 0)
+            {
+                // get next match
+                _searchLineIndex--;
+            }
+
+            // wrap the search
+            if (hasMatches && _searchLineIndex == -1)
+                _searchLineIndex = matches.Count - 1; // wrap to last match
+
+            // scroll to the line number
+            if (_searchLineIndex >= 0)
+            {
+                var historyLineNumber = matches.Skip(_searchLineIndex).Select(x => x.Key).FirstOrDefault();
+                if (_fullLogHistory.Count - historyLineNumber - LogDisplayHeight >= 0)
+                    _bufferYCursor = _fullLogHistory.Count - historyLineNumber - LogDisplayHeight;
+            }
+            _config.DataContext.SetData<int>("SearchIndex", _searchLineIndex);
         }
 
         private void DrawShutdown()

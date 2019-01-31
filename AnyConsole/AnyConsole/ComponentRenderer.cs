@@ -32,12 +32,13 @@ namespace AnyConsole
 
         private void InitializeBuiltInComponents()
         {
-            _builtInComponents.Add(typeof(DiskUsedComponent), new DiskUsedComponent());
-            _builtInComponents.Add(typeof(DiskFreeComponent), new DiskFreeComponent());
-            _builtInComponents.Add(typeof(MemoryFreeComponent), new MemoryFreeComponent());
-            _builtInComponents.Add(typeof(MemoryUsedComponent), new MemoryUsedComponent());
-            _builtInComponents.Add(typeof(CpuUsageComponent), new CpuUsageComponent());
-            _builtInComponents.Add(typeof(IPAddressComponent), new IPAddressComponent());
+            _builtInComponents.Add(typeof(DiskUsedComponent), new DiskUsedComponent(_dataContext));
+            _builtInComponents.Add(typeof(DiskFreeComponent), new DiskFreeComponent(_dataContext));
+            _builtInComponents.Add(typeof(MemoryFreeComponent), new MemoryFreeComponent(_dataContext));
+            _builtInComponents.Add(typeof(MemoryUsedComponent), new MemoryUsedComponent(_dataContext));
+            _builtInComponents.Add(typeof(CpuUsageComponent), new CpuUsageComponent(_dataContext));
+            _builtInComponents.Add(typeof(IPAddressComponent), new IPAddressComponent(_dataContext));
+            _builtInComponents.Add(typeof(LogSearchComponent), new LogSearchComponent(_dataContext));
             foreach (var builtInComponent in _builtInComponents)
                 builtInComponent.Value.Setup(_dataContext, builtInComponent.GetType().Name, _console);
         }
@@ -103,6 +104,10 @@ namespace AnyConsole
                     return RenderCurrentBufferLine();
                 case Component.TotalLinesBuffered:
                     return RenderTotalLinesBuffered();
+                case Component.ScrollbackPaused:
+                    return RenderScrollbackPaused();
+                case Component.LogSearch:
+                    return _builtInComponents[typeof(LogSearchComponent)].Render();
                 case Component.DiskUsed:
                     return _builtInComponents[typeof(DiskUsedComponent)].Render();
                 case Component.DiskFree:
@@ -130,7 +135,9 @@ namespace AnyConsole
         {
             if (!_customComponents.ContainsKey(componentName))
                 throw new InvalidOperationException($"No component registered with name '{componentName}'");
-            return _customComponents[componentName].Render();
+            if(_customComponents[componentName].HasUpdates)
+                return _customComponents[componentName].Render();
+            return string.Empty;
         }
 
         #region Built-in Components
@@ -175,8 +182,16 @@ namespace AnyConsole
 
         private string RenderTotalLinesBuffered()
         {
-            var totalLines = ((ExtendedConsole)_console).fullLogHistory.Count;
+            var totalLines = ((ExtendedConsole)_console)._fullLogHistory.Count;
             return $"Total: {totalLines}";
+        }
+
+        private string RenderScrollbackPaused()
+        {
+            var isPaused = ((ExtendedConsole)_console)._bufferYCursor > 0;
+            if (isPaused)
+                return $"PAUSED";
+            return string.Empty;
         }
 
         #endregion

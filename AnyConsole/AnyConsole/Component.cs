@@ -20,6 +20,8 @@
         NetworkTransfer,
         CurrentBufferLine,
         TotalLinesBuffered,
+        ScrollbackPaused,
+        LogSearch,
         Custom
     }
 }

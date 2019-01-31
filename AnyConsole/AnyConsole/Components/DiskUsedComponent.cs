@@ -9,7 +9,7 @@ namespace AnyConsole.Components
         private string _value;
         private DriveInfo _drive;
 
-        public DiskUsedComponent() : base()
+        public DiskUsedComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
             var drives = DriveInfo.GetDrives();
             // get the drive the app is using

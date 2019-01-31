@@ -4,6 +4,8 @@
     {
         private string _value;
 
+        public MemoryFreeComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext) { }
+
         public override string Render() => _value;
 
         public override void Tick(ulong tickCount)

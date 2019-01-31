@@ -39,6 +39,13 @@ namespace AnyConsole
                                     if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
                                     {
                                         // internal keyboard handling events
+                                        if (_isSearchEnabled && keyEvent.bKeyDown
+                                            && !keyEvent.dwControlKeyState.HasFlag(ControlKeyState.LEFT_CTRL_PRESSED)
+                                            && !keyEvent.dwControlKeyState.HasFlag(ControlKeyState.RIGHT_CTRL_PRESSED)
+                                            && !keyEvent.dwControlKeyState.HasFlag(ControlKeyState.LEFT_ALT_PRESSED)
+                                            && !keyEvent.dwControlKeyState.HasFlag(ControlKeyState.RIGHT_ALT_PRESSED)
+                                        )
+                                            AddSearchString(keyEvent.UnicodeChar);
                                         switch (key)
                                         {
                                             case ConsoleKey.Home:
@@ -50,7 +57,34 @@ namespace AnyConsole
                                             case ConsoleKey.End:
                                                 // scroll to end
                                                 _bufferYCursor = 0;
+                                                _searchLineIndex = -1;
                                                 _hasLogUpdates = true;
+                                                SetSearch(false);
+                                                break;
+                                            case ConsoleKey.Enter:
+                                                if (_isSearchEnabled && keyEvent.bKeyDown)
+                                                    FindNext();
+                                                break;
+                                            case ConsoleKey.S:
+                                                // find/search
+                                                if (keyEvent.bKeyDown && keyEvent.dwControlKeyState.HasFlag(ControlKeyState.LEFT_CTRL_PRESSED))
+                                                {
+                                                    ToggleSearch();
+                                                }
+                                                break;
+                                            case ConsoleKey.F3:
+                                                // find/search control keys
+                                                if (keyEvent.bKeyDown)
+                                                {
+                                                    if (keyEvent.dwControlKeyState.HasFlag(ControlKeyState.SHIFT_PRESSED))
+                                                    {
+                                                        FindPrevious();
+                                                    }
+                                                    else
+                                                    {
+                                                        FindNext();
+                                                    }
+                                                }
                                                 break;
                                             case ConsoleKey.Q:
                                                 // quit
@@ -94,7 +128,7 @@ namespace AnyConsole
                                             if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
                                             {
                                                 _hasLogUpdates = true;
-                                                if (_bufferYCursor < fullLogHistory.Count - LogDisplayHeight)
+                                                if (_bufferYCursor < _fullLogHistory.Count - LogDisplayHeight)
                                                     _bufferYCursor++;
                                             }
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Down));

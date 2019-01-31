@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AnyConsole
 {
@@ -26,6 +27,11 @@ namespace AnyConsole
                 return _instance;
             }
         }
+
+        /// <summary>
+        /// The unique instance Id of the data context
+        /// </summary>
+        public Guid InstanceId { get; } = Guid.NewGuid();
 
         static ConsoleDataContext() { }
 

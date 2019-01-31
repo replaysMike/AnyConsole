@@ -11,6 +11,12 @@ namespace AnyConsole.Components
         public Process CurrentProcess { get { return Process.GetCurrentProcess(); } }
 
         private ConsoleDataContext _data;
+        internal ConsoleDataContext _consoleDataContext;
+
+        public BaseProcessComponent(ConsoleDataContext consoleDataContext)
+        {
+            _consoleDataContext = consoleDataContext;
+        }
 
         public virtual string Render()
         {

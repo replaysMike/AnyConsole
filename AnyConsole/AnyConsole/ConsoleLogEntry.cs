@@ -8,23 +8,31 @@ namespace AnyConsole
     public class ConsoleLogEntry
     {
         public string OriginalLine { get; set; } = string.Empty;
-        public string TruncatedLine { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
 
         /// <summary>
         /// Console redirection log entry
         /// </summary>
         /// <param name="originalLine"></param>
-        /// <param name="maxWidth"></param>
-        public ConsoleLogEntry(string originalLine, int maxWidth)
+        public ConsoleLogEntry(string originalLine)
         {
             OriginalLine = originalLine;
-            TruncatedLine = TruncateLine(FormatLine(originalLine), maxWidth);
         }
 
-        private string TruncateLine(string line, int maxWidth)
+        /// <summary>
+        /// Get the truncated line for display
+        /// </summary>
+        /// <param name="maxWidth"></param>
+        /// <param name="prefixLength"></param>
+        /// <returns></returns>
+        public string GetTruncatedLine(int maxWidth, int prefixLength)
         {
-            var stringLength = line.Length + ClassName.Length;
+            return TruncateLine(FormatLine(OriginalLine), maxWidth, prefixLength);
+        }
+
+        private string TruncateLine(string line, int maxWidth, int prefixLength)
+        {
+            var stringLength = line.Length + ClassName.Length + prefixLength;
             if (stringLength > maxWidth)
                 return line.Substring(stringLength - maxWidth);
             return line;
