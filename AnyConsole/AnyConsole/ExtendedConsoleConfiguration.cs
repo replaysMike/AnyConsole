@@ -82,6 +82,31 @@ namespace AnyConsole
         }
 
         /// <summary>
+        /// Set the location of where screen output will be buffered to
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="index"></param>
+        public void SetLogHistoryContainer(RowLocation location, int index, Color foregroundColor)
+        {
+            LogHistoryContainer.Location = location;
+            LogHistoryContainer.Index = index;
+            LogHistoryContainer.ForegroundColor = foregroundColor;
+        }
+
+        /// <summary>
+        /// Set the location of where screen output will be buffered to
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="index"></param>
+        public void SetLogHistoryContainer(RowLocation location, int index, Color foregroundColor, Color backgroundColor)
+        {
+            LogHistoryContainer.Location = location;
+            LogHistoryContainer.Index = index;
+            LogHistoryContainer.ForegroundColor = foregroundColor;
+            LogHistoryContainer.BackgroundColor = backgroundColor;
+        }
+
+        /// <summary>
         /// Set a static console row
         /// </summary>
         /// <param name="name">The name for the row</param>

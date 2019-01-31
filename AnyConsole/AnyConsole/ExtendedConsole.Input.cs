@@ -44,11 +44,13 @@ namespace AnyConsole
                                             case ConsoleKey.Home:
                                                 // scroll to start
                                                 _bufferYCursor = _defaultBufferHistoryLinesLength;
+                                                _hasLogUpdates = true;
                                                 break;
                                             case ConsoleKey.Escape:
                                             case ConsoleKey.End:
                                                 // scroll to end
                                                 _bufferYCursor = 0;
+                                                _hasLogUpdates = true;
                                                 break;
                                             case ConsoleKey.Q:
                                                 // quit
@@ -81,7 +83,8 @@ namespace AnyConsole
                                         {
                                             if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
                                             {
-                                                if(_bufferYCursor > 0)
+                                                _hasLogUpdates = true;
+                                                if (_bufferYCursor > 0)
                                                     _bufferYCursor--;
                                             }
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Up));
@@ -90,7 +93,8 @@ namespace AnyConsole
                                         {
                                             if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
                                             {
-                                                if(_bufferYCursor < fullLogHistory.Count - LogDisplayHeight)
+                                                _hasLogUpdates = true;
+                                                if (_bufferYCursor < fullLogHistory.Count - LogDisplayHeight)
                                                     _bufferYCursor++;
                                             }
                                             OnMouseScroll?.Invoke(new MouseScrollEventArgs(MouseScrollDirection.Down));

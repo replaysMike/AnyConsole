@@ -29,6 +29,7 @@ namespace AnyConsole
         internal ICollection<ConsoleLogEntry> _logHistory = new List<ConsoleLogEntry>();
         internal List<ConsoleLogEntry> fullLogHistory;
         internal int LogDisplayHeight { get { return Console.WindowHeight - 3; } }
+        private bool _hasLogUpdates = false;
 
         #region Events
         public delegate void KeyPress(KeyPressEventArgs e);
@@ -134,7 +135,7 @@ namespace AnyConsole
             {
                 fullLogHistory = ProcessBufferedOutput(_screenLogBuilder, fullLogHistory);
                 var displayHistory = TrimBufferForDisplay(fullLogHistory);
-                DrawStaticHeader(screenHeaderBuilder, displayHistory);
+                DrawStaticHeader(screenHeaderBuilder, displayHistory, _hasLogUpdates);
             }
         }
 
@@ -184,9 +185,14 @@ namespace AnyConsole
         private List<ConsoleLogEntry> ProcessBufferedOutput(StringBuilder screenLogBuilder, List<ConsoleLogEntry> logHistory)
         {
             // get the stdout screen buffer and add it to the internal screen buffer
-            var pendingLines = screenLogBuilder.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            var pendingLines = screenLogBuilder.ToString().Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var pendingLine in pendingLines)
+            {
                 logHistory.Add(new ConsoleLogEntry(pendingLine, Console.WindowWidth));
+                _hasLogUpdates = true;
+                if (_bufferYCursor != 0)
+                    _bufferYCursor++;
+            }
 
             // remove older items not shown to the screen as it's not needed anymore
             //var linesToRemove = Math.Abs(height - logHistory.Count);
@@ -199,7 +205,7 @@ namespace AnyConsole
             return logHistory;
         }
 
-        private void DrawStaticHeader(StringBuilder infoBuilder, ICollection<ConsoleLogEntry> log)
+        private void DrawStaticHeader(StringBuilder infoBuilder, ICollection<ConsoleLogEntry> log, bool logHasUpdates)
         {
             // we will write any screen contents to stderr, as stdout is redirected internally
             var stdout = Console.Error;
@@ -232,36 +238,65 @@ namespace AnyConsole
                 }
             }
 
-            // restore cursor
-            Console.SetCursorPosition(GetXPosition(_config.LogHistoryContainer, 0), GetYPosition(_config.LogHistoryContainer, 0));
-            // write the screen log buffer
-            var i = 0;
-            var linesToFade = Options.RenderOptions.HasFlag(RenderOptions.FadeHistory) ? 6 : 0;
-            foreach (var logLine in log)
+            if (logHasUpdates)
             {
-                // fade the long lines away
-                var logForegroundColor = Style.Foreground;
-                var classNameForegroundColor = Style.ClassName;
-                if (logLine.OriginalLine.Contains("|WARN|"))
-                    logForegroundColor = Style.WarningText;
-                if (logLine.OriginalLine.Contains("|ERROR|"))
-                    logForegroundColor = Style.ErrorText;
-
-                if (i < linesToFade)
+                // restore cursor
+                var xpos = GetXPosition(_config.LogHistoryContainer, 0);
+                var ypos = GetYPosition(_config.LogHistoryContainer, 0);
+                // write the screen log buffer
+                Console.SetCursorPosition(xpos, ypos);
+                var i = 0;
+                var linesToFade = Options.RenderOptions.HasFlag(RenderOptions.FadeHistory) ? 6 : 0;
+                var className = string.Empty;
+                var rowPrefix = string.Empty;
+                var hideClassNamePrefix = Options.RenderOptions.HasFlag(RenderOptions.HideClassNamePrefix);
+                var hideLogRowPrefix = Options.RenderOptions.HasFlag(RenderOptions.HideLogRowPrefix);
+                foreach (var logLine in log)
                 {
-                    logForegroundColor = System.Drawing.Color.FromArgb(Math.Max(Style.Background.R + 20, logForegroundColor.R - ((linesToFade - i) * 25)), Math.Max(Style.Background.G + 20, logForegroundColor.G - ((linesToFade - i) * 25)), Math.Max(Style.Background.B + 20, logForegroundColor.B - ((linesToFade - i) * 25)));
-                    //classNameForegroundColor = System.Drawing.Color.FromArgb(Math.Max(Style.Background.R + 20, classNameForegroundColor.R - ((linesToFade - i) * 25)), Math.Max(Style.Background.G + 20, classNameForegroundColor.G - ((linesToFade - i) * 25)), Math.Max(Style.Background.B + 20, classNameForegroundColor.B - ((linesToFade - i) * 25)));
-                }
-                Console.ForegroundColor = classNameForegroundColor;
-                var className = $"{logLine.ClassName}> ";
-                stdout.Write(className);
+                    // fade the long lines away
+                    var logForegroundColor = _config.LogHistoryContainer.ForegroundColor != null
+                        ? _config.LogHistoryContainer.ForegroundColor.Value
+                        : Style.Foreground;
+                    var classNameForegroundColor = Style.ClassName;
+                    if (logLine.OriginalLine.Contains("|WARN|"))
+                        logForegroundColor = Style.WarningText;
+                    if (logLine.OriginalLine.Contains("|ERROR|"))
+                        logForegroundColor = Style.ErrorText;
 
-                Console.ForegroundColor = logForegroundColor;
-                var spaces = (Console.WindowWidth - className.Length - logLine.TruncatedLine.Length);
-                if (spaces < 0)
-                    spaces = 0;
-                stdout.Write(logLine.TruncatedLine + new string(' ', spaces));
-                i++;
+                    if (i < linesToFade)
+                    {
+                        var r = Math.Max(logForegroundColor.R - ((linesToFade - i) * 25), 0);
+                        var g = Math.Max(logForegroundColor.G - ((linesToFade - i) * 25), 0);
+                        var b = Math.Max(logForegroundColor.B - ((linesToFade - i) * 25), 0);
+                        logForegroundColor = System.Drawing.Color.FromArgb(255, r, g, b);
+                        var cr = Math.Max(classNameForegroundColor.R - ((linesToFade - i) * 25), 0);
+                        var cg = Math.Max(classNameForegroundColor.G - ((linesToFade - i) * 25), 0);
+                        var cb = Math.Max(classNameForegroundColor.B - ((linesToFade - i) * 25), 0);
+                        classNameForegroundColor = System.Drawing.Color.FromArgb(255, cr, cg, cb);
+                        //logForegroundColor = System.Drawing.Color.FromArgb(Math.Max(Style.Background.R + 20, logForegroundColor.R - ((linesToFade - i) * 25)), Math.Max(Style.Background.G + 20, logForegroundColor.G - ((linesToFade - i) * 25)), Math.Max(Style.Background.B + 20, logForegroundColor.B - ((linesToFade - i) * 25)));
+                        // can't figure out why, but this causes ForegroundColor to always evaluate to White??
+                        //classNameForegroundColor = System.Drawing.Color.FromArgb(Math.Max(Style.Background.R + 20, classNameForegroundColor.R - ((linesToFade - i) * 25)), Math.Max(Style.Background.G + 20, classNameForegroundColor.G - ((linesToFade - i) * 25)), Math.Max(Style.Background.B + 20, classNameForegroundColor.B - ((linesToFade - i) * 25)));
+                    }
+
+                    Console.ForegroundColor = classNameForegroundColor;
+                    if (!hideClassNamePrefix)
+                    {
+                        className = $"{logLine.ClassName}";
+                        stdout.Write(className);
+                    }
+                    if (!hideLogRowPrefix)
+                    {
+                        rowPrefix = $"> ";
+                        stdout.Write(rowPrefix);
+                    }
+
+                    Console.ForegroundColor = logForegroundColor;
+                    var spaces = (Console.WindowWidth - className.Length - rowPrefix.Length - logLine.TruncatedLine.Length);
+                    if (spaces < 0)
+                        spaces = 0;
+                    stdout.Write(logLine.TruncatedLine + new string(' ', spaces));
+                    i++;
+                }
             }
 
             if (_config.WindowFrame.Size > 0)

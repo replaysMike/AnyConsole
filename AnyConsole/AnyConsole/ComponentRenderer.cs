@@ -133,7 +133,7 @@ namespace AnyConsole
             return _customComponents[componentName].Render();
         }
 
-        #region Built-in Component
+        #region Built-in Components
 
         private string RenderDateTime()
         {
@@ -167,12 +167,16 @@ namespace AnyConsole
 
         private string RenderCurrentBufferLine()
         {
-            return $"C: {((ExtendedConsole)_console)._bufferYCursor}";
+            var currentLogLine = ((ExtendedConsole)_console)._bufferYCursor;
+            if (currentLogLine < 0)
+                currentLogLine = 0;
+            return $"Current: {currentLogLine}";
         }
 
         private string RenderTotalLinesBuffered()
         {
-            return $"T: {((ExtendedConsole)_console).fullLogHistory.Count}";
+            var totalLines = ((ExtendedConsole)_console).fullLogHistory.Count;
+            return $"Total: {totalLines}";
         }
 
         #endregion

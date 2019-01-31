@@ -36,7 +36,7 @@ namespace AnyConsole
             if (parts.Length >= 3)
             {
                 var classParts = parts[parts.Length - 3].Split(new string[] { "." }, StringSplitOptions.None);
-                ClassName = classParts[classParts.Length - 1] + "> ";
+                ClassName = classParts[classParts.Length - 1];
             }
             if (parts.Length >= 2)
                 return parts[parts.Length - 2];

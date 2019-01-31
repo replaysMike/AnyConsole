@@ -7,6 +7,10 @@ namespace AnyConsole
     /// </summary>
     public class ConsoleOptions
     {
+        private static readonly RenderOptions _defaultRenderOptions = RenderOptions.HideCursor | RenderOptions.FadeHistory;
+        private static readonly InputOptions _defaultInputOptions = InputOptions.UseBuiltInKeyOperations;
+        private static readonly int _defaultTextSpacing = 1;
+
         /// <summary>
         /// Console render options
         /// </summary>
@@ -30,16 +34,21 @@ namespace AnyConsole
         /// <summary>
         /// Create a new console options
         /// </summary>
-        public ConsoleOptions() : this(RenderOptions.None)
+        public ConsoleOptions() : this(_defaultRenderOptions)
         {
             
         }
 
+        public ConsoleOptions(int textSpacing) : this(_defaultRenderOptions, _defaultInputOptions, textSpacing, null, null)
+        {
+
+        }
+
         /// <summary>
         /// Create a new console options
         /// </summary>
         /// <param name="renderOptions">Rendering options</param>
-        public ConsoleOptions(RenderOptions renderOptions) : this(renderOptions, InputOptions.UseBuiltInKeyOperations, 1, null, null)
+        public ConsoleOptions(RenderOptions renderOptions) : this(renderOptions, _defaultInputOptions, _defaultTextSpacing, null, null)
         {
         }
 
@@ -47,7 +56,7 @@ namespace AnyConsole
         /// Create a new console options
         /// </summary>
         /// <param name="inputOptions">Input handling options</param>
-        public ConsoleOptions(InputOptions inputOptions) : this(RenderOptions.None, inputOptions, 1, null, null)
+        public ConsoleOptions(InputOptions inputOptions) : this(_defaultRenderOptions, inputOptions, _defaultTextSpacing, null, null)
         {
         }
 
@@ -56,7 +65,7 @@ namespace AnyConsole
         /// </summary>
         /// <param name="renderOptions">Rendering options</param>
         /// <param name="inputOptions">Input handling options</param>
-        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions) : this(renderOptions, inputOptions, 1, null, null)
+        public ConsoleOptions(RenderOptions renderOptions, InputOptions inputOptions) : this(renderOptions, inputOptions, _defaultTextSpacing, null, null)
         {
         }
 
