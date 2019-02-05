@@ -22,10 +22,16 @@ namespace AnyConsole.Runner
         {
         }
 
-        public string Render()
+        public string Render(object parameters)
         {
-            _hasUpdates = false;
-            return $"RND: {_randomNumber}";
+            try
+            {
+                return $"RND: {_randomNumber}";
+            }
+            finally
+            {
+                _hasUpdates = false;
+            }
         }
 
         /// <summary>

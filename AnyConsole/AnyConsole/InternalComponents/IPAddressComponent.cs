@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net;
 
-namespace AnyConsole.Components
+namespace AnyConsole.InternalComponents
 {
     public class IPAddressComponent : BaseProcessComponent
     {
@@ -20,7 +20,17 @@ namespace AnyConsole.Components
             _ipAddress = host.AddressList.Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToArray();
         }
 
-        public override string Render() => _value;
+        public override string Render(object parameters)
+        {
+            try
+            {
+                return _value;
+            }
+            finally
+            {
+                HasUpdates = false;
+            }
+        }
 
         public override void Tick(ulong tickCount)
         {
@@ -28,7 +38,12 @@ namespace AnyConsole.Components
             if (tickCount == 0 || tickCount % 20 == 0)
             {
                 UpdateIP();
-                _value = $"{string.Join(", ", _ipAddress)}";
+                var newValue = $"{string.Join(", ", _ipAddress)}";
+                if (!newValue.Equals(_value))
+                {
+                    _value = newValue;
+                    HasUpdates = true;
+                }
             }
             
         }

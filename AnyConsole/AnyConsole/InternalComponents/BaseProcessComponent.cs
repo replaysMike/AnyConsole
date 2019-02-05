@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 
-namespace AnyConsole.Components
+namespace AnyConsole.InternalComponents
 {
     public class BaseProcessComponent : IComponent
     {
-        public bool HasUpdates => true;
+        public bool HasUpdates { get; protected set; }
 
         public bool HasCustomThreadManagement => false;
 
@@ -18,7 +18,7 @@ namespace AnyConsole.Components
             _consoleDataContext = consoleDataContext;
         }
 
-        public virtual string Render()
+        public virtual string Render(object parameters)
         {
             return string.Empty;
         }

@@ -9,7 +9,7 @@
         /// The string to render
         /// </summary>
         /// <returns></returns>
-        string Render();
+        string Render(object parameters);
 
         /// <summary>
         /// Handler is called periodically to do component logic updates.

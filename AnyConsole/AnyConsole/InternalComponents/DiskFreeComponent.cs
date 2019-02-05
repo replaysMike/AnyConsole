@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace AnyConsole.Components
+namespace AnyConsole.InternalComponents
 {
     public class DiskFreeComponent : BaseProcessComponent
     {
@@ -17,13 +17,30 @@ namespace AnyConsole.Components
             _drive = drives.Where(x => x.Name.Equals(drive)).FirstOrDefault();
         }
 
-        public override string Render() => _value;
+        public override string Render(object parameters)
+        {
+            try
+            {
+                return _value;
+            }
+            finally
+            {
+                HasUpdates = false;
+            }
+        }
 
         public override void Tick(ulong tickCount)
         {
             base.Tick(tickCount);
-            if(_drive != null)
-                _value = FormatSize(_drive.AvailableFreeSpace);
+            if (_drive != null)
+            {
+                var newValue = FormatSize(_drive.AvailableFreeSpace);
+                if (!newValue.Equals(_value))
+                {
+                    _value = newValue;
+                    HasUpdates = true;
+                }
+            }
         }
     }
 }

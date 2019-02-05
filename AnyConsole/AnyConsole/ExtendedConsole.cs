@@ -80,6 +80,7 @@ namespace AnyConsole
             var consoleConfiguration = new ExtendedConsoleConfiguration();
             config.Invoke(consoleConfiguration);
             _config = consoleConfiguration;
+            _config.DataContext.SetData<ExtendedConsole>("ExtendedConsole", this);
 
             _componentRenderer = new ComponentRenderer(this, _config.DataContext);
             foreach (var component in _config.CustomComponents)

@@ -1,4 +1,4 @@
-﻿using AnyConsole.Components;
+﻿using AnyConsole.InternalComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace AnyConsole
     public class ComponentRenderer : IDisposable
     {
         private IDictionary<string, IComponent> _customComponents = new Dictionary<string, IComponent>();
-        private IDictionary<Type, IComponent> _builtInComponents = new Dictionary<Type, IComponent>();
+        private IDictionary<Component, IComponent> _builtInComponents = new Dictionary<Component, IComponent>();
         private readonly IExtendedConsole _console;
         private bool _isDisposed;
         private ManualResetEvent _isRunning = new ManualResetEvent(false);
@@ -32,13 +32,18 @@ namespace AnyConsole
 
         private void InitializeBuiltInComponents()
         {
-            _builtInComponents.Add(typeof(DiskUsedComponent), new DiskUsedComponent(_dataContext));
-            _builtInComponents.Add(typeof(DiskFreeComponent), new DiskFreeComponent(_dataContext));
-            _builtInComponents.Add(typeof(MemoryFreeComponent), new MemoryFreeComponent(_dataContext));
-            _builtInComponents.Add(typeof(MemoryUsedComponent), new MemoryUsedComponent(_dataContext));
-            _builtInComponents.Add(typeof(CpuUsageComponent), new CpuUsageComponent(_dataContext));
-            _builtInComponents.Add(typeof(IPAddressComponent), new IPAddressComponent(_dataContext));
-            _builtInComponents.Add(typeof(LogSearchComponent), new LogSearchComponent(_dataContext));
+            _builtInComponents.Add(Component.DateTime, new DateTimeComponent(_dataContext));
+            _builtInComponents.Add(Component.DateTimeUtc, new DateTimeUtcComponent(_dataContext));
+            _builtInComponents.Add(Component.CurrentBufferLine, new LogBufferCurrentLineComponent(_dataContext));
+            _builtInComponents.Add(Component.TotalLinesBuffered, new LogBufferTotalLinesComponent(_dataContext));
+            _builtInComponents.Add(Component.ScrollbackPaused, new LogBufferIsPausedComponent(_dataContext));
+            _builtInComponents.Add(Component.DiskUsed, new DiskUsedComponent(_dataContext));
+            _builtInComponents.Add(Component.DiskFree, new DiskFreeComponent(_dataContext));
+            _builtInComponents.Add(Component.MemoryFree, new MemoryFreeComponent(_dataContext));
+            _builtInComponents.Add(Component.MemoryUsed, new MemoryUsedComponent(_dataContext));
+            _builtInComponents.Add(Component.CpuUsage, new CpuUsageComponent(_dataContext));
+            _builtInComponents.Add(Component.IP, new IPAddressComponent(_dataContext));
+            _builtInComponents.Add(Component.LogSearch, new LogSearchComponent(_dataContext));
             foreach (var builtInComponent in _builtInComponents)
                 builtInComponent.Value.Setup(_dataContext, builtInComponent.GetType().Name, _console);
         }
@@ -50,10 +55,12 @@ namespace AnyConsole
             var customComponentWithoutThreadManagement = _customComponents.Where(x => x.Value.HasCustomThreadManagement).ToList();
             while (!_isRunning.WaitOne(100))
             {
+                // todo: come up with an optimized way of only calling Tick on registered components
                 foreach (var component in _builtInComponents)
                     component.Value.Tick(tickCount);
                 foreach (var component in _customComponents)
                     component.Value.Tick(tickCount);
+                tickCount++;
             }
         }
 
@@ -89,39 +96,21 @@ namespace AnyConsole
             switch (component)
             {
                 case Component.DateTime:
-                    return RenderDateTime();
+                    return _builtInComponents[component].Render($"YYYY-mm-dd hh:mm:ss tt");
                 case Component.DateTimeUtc:
-                    return RenderDateTimeUtc();
+                    return _builtInComponents[component].Render($"YYYY-mm-dd hh:mm:ss tt");
                 case Component.Date:
-                    return RenderDate();
+                    return _builtInComponents[component].Render($"YYYY-mm-dd");
                 case Component.DateUtc:
-                    return RenderDateUtc();
+                    return _builtInComponents[component].Render($"YYYY-mm-dd");
                 case Component.Time:
-                    return RenderTime();
+                    return _builtInComponents[component].Render($"hh:mm:ss tt");
                 case Component.TimeUtc:
-                    return RenderTimeUtc();
-                case Component.CurrentBufferLine:
-                    return RenderCurrentBufferLine();
-                case Component.TotalLinesBuffered:
-                    return RenderTotalLinesBuffered();
-                case Component.ScrollbackPaused:
-                    return RenderScrollbackPaused();
-                case Component.LogSearch:
-                    return _builtInComponents[typeof(LogSearchComponent)].Render();
-                case Component.DiskUsed:
-                    return _builtInComponents[typeof(DiskUsedComponent)].Render();
-                case Component.DiskFree:
-                    return _builtInComponents[typeof(DiskFreeComponent)].Render();
-                case Component.MemoryUsed:
-                    return _builtInComponents[typeof(MemoryUsedComponent)].Render();
-                case Component.MemoryFree:
-                    return _builtInComponents[typeof(MemoryFreeComponent)].Render();
-                case Component.CpuUsage:
-                    return _builtInComponents[typeof(CpuUsageComponent)].Render();
-                case Component.IP:
-                    return _builtInComponents[typeof(IPAddressComponent)].Render();
+                    return _builtInComponents[component].Render($"hh:mm:ss tt");
                 case Component.Custom:
-                    return Render(componentName);
+                    return Render(componentName, null);
+                default:
+                    return _builtInComponents[component].Render(null);
             }
             throw new ArgumentOutOfRangeException($"Unknown component: '{component}'");
         }
@@ -131,70 +120,33 @@ namespace AnyConsole
         /// </summary>
         /// <param name="componentName"></param>
         /// <returns></returns>
-        public string Render(string componentName)
+        public string Render(string componentName, object parameters)
         {
             if (!_customComponents.ContainsKey(componentName))
                 throw new InvalidOperationException($"No component registered with name '{componentName}'");
-            if(_customComponents[componentName].HasUpdates)
-                return _customComponents[componentName].Render();
-            return string.Empty;
+            return _customComponents[componentName].Render(parameters);
         }
 
-        #region Built-in Components
-
-        private string RenderDateTime()
+        /// <summary>
+        /// Get if any components have updates to render
+        /// </summary>
+        /// <param name="componentName"></param>
+        /// <returns></returns>
+        public bool HasUpdates(IEnumerable<RowContent> componentsToRender)
         {
-            return $"{DateTime.Now}";
-        }
+            var customComponents = componentsToRender
+                .Where(x => x.Component == Component.Custom)
+                .Select(x => x.ComponentName);
+            var customComponentsHaveUpdates = _customComponents
+                .Any(x => customComponents.Contains(x.Key) && x.Value.HasUpdates);
+            var builtInComponents = componentsToRender
+                .Where(x => _builtInComponents.Keys.Contains(x.Component))
+                .Select(x => x.Component);
+            var builtInComponentsHaveUpdates = _builtInComponents
+                .Any(x => builtInComponents.Contains(x.Key) && x.Value.HasUpdates);
 
-        private string RenderDate()
-        {
-            return $"{DateTime.Now.ToShortDateString()}";
+            return customComponentsHaveUpdates || builtInComponentsHaveUpdates;
         }
-
-        private string RenderTime()
-        {
-            return $"{DateTime.Now.ToString("hh:mm:ss tt")}";
-        }
-
-        private string RenderDateTimeUtc()
-        {
-            return $"{DateTime.UtcNow}";
-        }
-
-        private string RenderDateUtc()
-        {
-            return $"{DateTime.UtcNow.ToShortDateString()}";
-        }
-
-        private string RenderTimeUtc()
-        {
-            return $"{DateTime.UtcNow.ToString("hh:mm:ss tt")}";
-        }
-
-        private string RenderCurrentBufferLine()
-        {
-            var currentLogLine = ((ExtendedConsole)_console)._bufferYCursor;
-            if (currentLogLine < 0)
-                currentLogLine = 0;
-            return $"Current: {currentLogLine}";
-        }
-
-        private string RenderTotalLinesBuffered()
-        {
-            var totalLines = ((ExtendedConsole)_console)._fullLogHistory.Count;
-            return $"Total: {totalLines}";
-        }
-
-        private string RenderScrollbackPaused()
-        {
-            var isPaused = ((ExtendedConsole)_console)._bufferYCursor > 0;
-            if (isPaused)
-                return $"PAUSED";
-            return string.Empty;
-        }
-
-        #endregion
 
         #region IDisposable
 

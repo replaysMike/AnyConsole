@@ -76,50 +76,56 @@ namespace AnyConsole
             var originalForeColor = Console.ForegroundColor;
             var originalBackColor = Console.BackgroundColor;
 
-            // render the background for the row
-            Console.ForegroundColor = _row.ForegroundColor ?? originalForeColor;
-            Console.BackgroundColor = _row.BackgroundColor ?? originalBackColor;
-            var y = GetYPosition(_row.Location, _row.Index, yPosition);
-            Console.SetCursorPosition(0, y);
-            if (y == height - 1) width -= 1;
-            builder.Append(new string(' ', width));
-            output.Write(builder.ToString());
-            // reset position
-            Console.SetCursorPosition(cursorLeft, cursorTop);
-            builder.Clear();
-
             if (_content?.Any() == true)
             {
-                foreach (var item in _content)
+                //var componentsToRender = _content.Where(x => x.ContentType == RowContent.ContentTypes.Component).Select(x => x.ComponentName);
+                var contentHasUpdates = _renderer.ComponentRenderer.HasUpdates(_content);
+
+                if (contentHasUpdates)
                 {
-                    Console.ForegroundColor = item.ForegroundColor ?? _row.ForegroundColor ?? originalForeColor;
-                    Console.BackgroundColor = item.BackgroundColor ?? _row.BackgroundColor ?? originalBackColor;
+                    // render the background for the row
+                    Console.ForegroundColor = _row.ForegroundColor ?? originalForeColor;
+                    Console.BackgroundColor = _row.BackgroundColor ?? originalBackColor;
+                    var y = GetYPosition(_row.Location, _row.Index, yPosition);
+                    Console.SetCursorPosition(0, y);
+                    if (y == height - 1) width -= 1;
+                    builder.Append(new string(' ', width));
+                    output.Write(builder.ToString());
+                    // reset position
+                    Console.SetCursorPosition(cursorLeft, cursorTop);
+                    builder.Clear();
 
-                    // render the component
-                    string renderedContent = null;
-                    if(item.ContentType == RowContent.ContentTypes.Static)
-                        renderedContent = item.StaticContent;
-                    else if(item.ContentType == RowContent.ContentTypes.Component)
+                    foreach (var item in _content)
                     {
-                        renderedContent = _renderer.ComponentRenderer.Render(item.Component, item.ComponentName);
+                        Console.ForegroundColor = item.ForegroundColor ?? _row.ForegroundColor ?? originalForeColor;
+                        Console.BackgroundColor = item.BackgroundColor ?? _row.BackgroundColor ?? originalBackColor;
+
+                        // render the component
+                        string renderedContent = null;
+                        if (item.ContentType == RowContent.ContentTypes.Static)
+                            renderedContent = item.StaticContent;
+                        else if (item.ContentType == RowContent.ContentTypes.Component)
+                        {
+                            renderedContent = _renderer.ComponentRenderer.Render(item.Component, item.ComponentName);
+                        }
+
+                        if (item.Location == ColumnLocation.Right)
+                            renderedContent = new string(' ', _renderer.ConsoleOptions.TextSpacing) + renderedContent;
+                        else
+                            renderedContent = renderedContent + new string(' ', _renderer.ConsoleOptions.TextSpacing);
+
+                        builder.Append(renderedContent);
+
+                        y = GetYPosition(_row.Location, _row.Index, yPosition);
+                        var x = GetXPosition(item.Location, y, renderedContent.Length, _leftMargin, _rightMargin);
+                        Console.SetCursorPosition(x, y);
+                        output.Write(renderedContent);
+                        xPosition += renderedContent.Length;
+                        if (item.Location == ColumnLocation.Right)
+                            _rightMargin += renderedContent.Length;
+                        else
+                            _leftMargin += renderedContent.Length;
                     }
-
-                    if (item.Location == ColumnLocation.Right)
-                        renderedContent = new string(' ', _renderer.ConsoleOptions.TextSpacing) + renderedContent;
-                    else
-                        renderedContent = renderedContent + new string(' ', _renderer.ConsoleOptions.TextSpacing);
-
-                    builder.Append(renderedContent);
-
-                    y = GetYPosition(_row.Location, _row.Index, yPosition);
-                    var x = GetXPosition(item.Location, y, renderedContent.Length, _leftMargin, _rightMargin);
-                    Console.SetCursorPosition(x, y);
-                    output.Write(renderedContent);
-                    xPosition += renderedContent.Length;
-                    if (item.Location == ColumnLocation.Right)
-                        _rightMargin += renderedContent.Length;
-                    else
-                        _leftMargin += renderedContent.Length;
                 }
             }
             Console.ForegroundColor = originalForeColor;
