@@ -46,36 +46,39 @@ namespace AnyConsole
                                             && !keyEvent.dwControlKeyState.HasFlag(ControlKeyState.RIGHT_ALT_PRESSED)
                                         )
                                             AddSearchString(keyEvent.UnicodeChar);
-                                        switch (key)
+                                        if (keyEvent.bKeyDown)
                                         {
-                                            case ConsoleKey.Home:
-                                                // scroll to start
-                                                _bufferYCursor = _defaultBufferHistoryLinesLength;
-                                                _hasLogUpdates = true;
-                                                break;
-                                            case ConsoleKey.Escape:
-                                            case ConsoleKey.End:
-                                                // scroll to end
-                                                _bufferYCursor = 0;
-                                                _searchLineIndex = -1;
-                                                _hasLogUpdates = true;
-                                                SetSearch(false);
-                                                break;
-                                            case ConsoleKey.Enter:
-                                                if (_isSearchEnabled && keyEvent.bKeyDown)
-                                                    FindNext();
-                                                break;
-                                            case ConsoleKey.S:
-                                                // find/search
-                                                if (keyEvent.bKeyDown && keyEvent.dwControlKeyState.HasFlag(ControlKeyState.LEFT_CTRL_PRESSED))
-                                                {
-                                                    ToggleSearch();
-                                                }
-                                                break;
-                                            case ConsoleKey.F3:
-                                                // find/search control keys
-                                                if (keyEvent.bKeyDown)
-                                                {
+                                            switch (key)
+                                            {
+                                                case ConsoleKey.H:
+                                                    ToggleHelp();
+                                                    break;
+                                                case ConsoleKey.Home:
+                                                    // scroll to start
+                                                    _bufferYCursor = _config.MaxHistoryLines;
+                                                    _hasLogUpdates = true;
+                                                    break;
+                                                case ConsoleKey.Escape:
+                                                case ConsoleKey.End:
+                                                    // scroll to end
+                                                    _bufferYCursor = 0;
+                                                    _searchLineIndex = -1;
+                                                    _hasLogUpdates = true;
+                                                    SetSearch(false);
+                                                    break;
+                                                case ConsoleKey.Enter:
+                                                    if (_isSearchEnabled)
+                                                        FindNext();
+                                                    break;
+                                                case ConsoleKey.S:
+                                                    // find/search
+                                                    if (keyEvent.dwControlKeyState.HasFlag(ControlKeyState.LEFT_CTRL_PRESSED))
+                                                    {
+                                                        ToggleSearch();
+                                                    }
+                                                    break;
+                                                case ConsoleKey.F3:
+                                                    // find/search control keys
                                                     if (keyEvent.dwControlKeyState.HasFlag(ControlKeyState.SHIFT_PRESSED))
                                                     {
                                                         FindPrevious();
@@ -84,13 +87,13 @@ namespace AnyConsole
                                                     {
                                                         FindNext();
                                                     }
-                                                }
-                                                break;
-                                            case ConsoleKey.Q:
-                                                // quit
-                                                Close();
-                                                Dispose();
-                                                break;
+                                                    break;
+                                                case ConsoleKey.Q:
+                                                    // quit
+                                                    Close();
+                                                    Dispose();
+                                                    break;
+                                            }
                                         }
                                     }
 

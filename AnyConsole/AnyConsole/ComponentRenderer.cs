@@ -13,6 +13,7 @@ namespace AnyConsole
     {
         private IDictionary<string, IComponent> _customComponents = new Dictionary<string, IComponent>();
         private IDictionary<Component, IComponent> _builtInComponents = new Dictionary<Component, IComponent>();
+        private ICollection<Component> _usedBuiltInComponents = new List<Component>();
         private readonly IExtendedConsole _console;
         private bool _isDisposed;
         private ManualResetEvent _isRunning = new ManualResetEvent(false);
@@ -30,10 +31,23 @@ namespace AnyConsole
             _componentUpdateThread.Start();
         }
 
+        /// <summary>
+        /// Register the components that will be used in the renderer
+        /// </summary>
+        /// <param name="components"></param>
+        public void RegisterUsedBuiltInComponents(IEnumerable<Component> components)
+        {
+            _usedBuiltInComponents = components.ToList();
+        }
+
         private void InitializeBuiltInComponents()
         {
             _builtInComponents.Add(Component.DateTime, new DateTimeComponent(_dataContext));
+            _builtInComponents.Add(Component.Date, new DateTimeComponent(_dataContext));
+            _builtInComponents.Add(Component.Time, new DateTimeComponent(_dataContext));
             _builtInComponents.Add(Component.DateTimeUtc, new DateTimeUtcComponent(_dataContext));
+            _builtInComponents.Add(Component.DateUtc, new DateTimeUtcComponent(_dataContext));
+            _builtInComponents.Add(Component.TimeUtc, new DateTimeUtcComponent(_dataContext));
             _builtInComponents.Add(Component.CurrentBufferLine, new LogBufferCurrentLineComponent(_dataContext));
             _builtInComponents.Add(Component.TotalLinesBuffered, new LogBufferTotalLinesComponent(_dataContext));
             _builtInComponents.Add(Component.ScrollbackPaused, new LogBufferIsPausedComponent(_dataContext));
@@ -55,8 +69,8 @@ namespace AnyConsole
             var customComponentWithoutThreadManagement = _customComponents.Where(x => x.Value.HasCustomThreadManagement).ToList();
             while (!_isRunning.WaitOne(100))
             {
-                // todo: come up with an optimized way of only calling Tick on registered components
-                foreach (var component in _builtInComponents)
+                // call the Tick method of each type of component. Only call Tick on components that are referenced in the renderer
+                foreach (var component in _builtInComponents.Where(x => _usedBuiltInComponents.Contains(x.Key)))
                     component.Value.Tick(tickCount);
                 foreach (var component in _customComponents)
                     component.Value.Tick(tickCount);
@@ -78,12 +92,13 @@ namespace AnyConsole
         /// Render a built-in component
         /// </summary>
         /// <param name="component"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
-        public string Render(Component component)
+        public string Render(Component component, object parameters)
         {
             if (component == Component.Custom)
                 throw new ArgumentException($"Custom components must pass the component name!");
-            return Render(component, null);
+            return Render(component, parameters);
         }
 
         /// <summary>
@@ -91,7 +106,7 @@ namespace AnyConsole
         /// </summary>
         /// <param name="component"></param>
         /// <returns></returns>
-        public string Render(Component component, string componentName)
+        public string Render(Component component, string componentName, object parameters)
         {
             switch (component)
             {
@@ -110,9 +125,10 @@ namespace AnyConsole
                 case Component.Custom:
                     return Render(componentName, null);
                 default:
-                    return _builtInComponents[component].Render(null);
+                    if(_builtInComponents.ContainsKey(component))
+                        return _builtInComponents[component].Render(parameters);
+                    throw new ArgumentOutOfRangeException($"Unknown component: '{component}'");
             }
-            throw new ArgumentOutOfRangeException($"Unknown component: '{component}'");
         }
 
         /// <summary>
@@ -144,8 +160,9 @@ namespace AnyConsole
                 .Select(x => x.Component);
             var builtInComponentsHaveUpdates = _builtInComponents
                 .Any(x => builtInComponents.Contains(x.Key) && x.Value.HasUpdates);
+            var unrenderedStaticRows = componentsToRender.Any(x => x.Component == Component.StaticContent && x.RenderCount == 0);
 
-            return customComponentsHaveUpdates || builtInComponentsHaveUpdates;
+            return customComponentsHaveUpdates || builtInComponentsHaveUpdates || unrenderedStaticRows;
         }
 
         #region IDisposable

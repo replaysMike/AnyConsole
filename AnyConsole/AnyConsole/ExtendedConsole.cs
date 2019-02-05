@@ -14,8 +14,6 @@ namespace AnyConsole
     /// </summary>
     public partial class ExtendedConsole : IExtendedConsole, IDisposable
     {
-        private static readonly int _drawingIntervalMs = 100;
-        private static readonly int _defaultBufferHistoryLinesLength = 1024;
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
         private StringBuilder _screenLogBuilder = new StringBuilder();
         private IDictionary<string, ICollection<RowContent>> _staticRowContentBuilder = new Dictionary<string, ICollection<RowContent>>();
@@ -32,6 +30,7 @@ namespace AnyConsole
         internal int LogDisplayHeight { get { return Console.WindowHeight - 3; } }
         private bool _hasLogUpdates = false;
         private bool _isSearchEnabled = false;
+        private bool _isHelpEnabled = false;
         private string _searchString;
         private int _searchLineIndex = -1;
         private SemaphoreSlim _historyLock = new SemaphoreSlim(1, 1);
@@ -118,8 +117,15 @@ namespace AnyConsole
         public void WriteLine(string text) => Console.WriteLine(text);
         public void Write(string text) => Console.Write(text);
 
+        private void RegisterComponents()
+        {
+            var components = _staticRowContentBuilder.SelectMany(x => x.Value.Select(y => y.Component)).Distinct().ToList();
+            _componentRenderer.RegisterUsedBuiltInComponents(components);
+        }
+
         private void InitializeConsole()
         {
+            RegisterComponents();
             // initialize the database update threads
             _isRunning = new ManualResetEvent(false);
             _inputThread = new Thread(new ThreadStart(InputThread));
@@ -138,7 +144,7 @@ namespace AnyConsole
             var screenHeaderBuilder = new StringBuilder();
             var displayHistory = new List<ConsoleLogEntry>();
             _fullLogHistory = new List<ConsoleLogEntry>();
-            while (!_isRunning.WaitOne(_drawingIntervalMs))
+            while (!_isRunning.WaitOne(_config.RedrawTimeSpan))
             {
                 _historyLock.Wait();
                 try
@@ -212,9 +218,9 @@ namespace AnyConsole
 
             // remove older items not shown to the screen as it's not needed anymore
             //var linesToRemove = Math.Abs(height - logHistory.Count);
-            var linesToRemove = Math.Abs(_defaultBufferHistoryLinesLength - logHistory.Count);
+            var linesToRemove = Math.Abs(_config.MaxHistoryLines - logHistory.Count);
 
-            if (logHistory.Count > _defaultBufferHistoryLinesLength && logHistory.Count >= linesToRemove)
+            if (logHistory.Count > _config.MaxHistoryLines && logHistory.Count >= linesToRemove)
                 logHistory.RemoveRange(0, linesToRemove);
             screenLogBuilder.Clear();
 
@@ -316,8 +322,53 @@ namespace AnyConsole
                 }
             }
 
+            if (_isHelpEnabled)
+            {
+                RenderHelpWindow(stdout);
+            }
+
             if (_config.WindowFrame.Size > 0)
                 WindowFrameRenderer.Render(_config.WindowFrame, stdout);
+        }
+
+        private void RenderHelpWindow(TextWriter stdout)
+        {
+            var width = Console.WindowWidth;
+            var height = Console.WindowHeight;
+            var cursorLeft = Console.CursorLeft;
+            var cursorTop = Console.CursorTop;
+            var originalForeground = Console.ForegroundColor;
+            var originalBackground = Console.BackgroundColor;
+            var longestEntry = _config.HelpScreen.HelpEntries.OrderByDescending(x => x.Key.Length + x.Description.Length).FirstOrDefault();
+            var helpWidth = longestEntry.Key.Length + longestEntry.Description.Length + 4;
+            var helpHeight = _config.HelpScreen.HelpEntries.Count;
+
+            var helpStartX = width / 2 - helpWidth / 2;
+            var helpStartY = height / 2 - helpHeight / 2;
+            var i = 0;
+            Console.SetCursorPosition(helpStartX, helpStartY);
+            Console.ForegroundColor = Style.HelpForeground;
+            Console.BackgroundColor = Style.HelpBackground;
+            stdout.Write(new string(' ', helpWidth + 2));
+            i++;
+            foreach (var entry in _config.HelpScreen.HelpEntries)
+            {
+                Console.SetCursorPosition(helpStartX, helpStartY + i);
+                Console.ForegroundColor = Style.HelpForeground;
+                Console.BackgroundColor = Style.HelpBackground;
+                var content = $"{entry.Key}: {entry.Description}";
+                var spaces = helpWidth - content.Length;
+                stdout.Write($"  {content}");
+                stdout.Write(new string(' ', spaces));
+                i++;
+            }
+            Console.SetCursorPosition(helpStartX, helpStartY + i);
+            Console.ForegroundColor = Style.HelpForeground;
+            Console.BackgroundColor = Style.HelpBackground;
+            stdout.Write(new string(' ', helpWidth + 2));
+            Console.ForegroundColor = originalForeground;
+            Console.BackgroundColor = originalBackground;
+            Console.SetCursorPosition(cursorLeft, cursorTop);
         }
 
         private int GetXPosition(LogHistoryContainer container, int currentOffset)
@@ -377,6 +428,11 @@ namespace AnyConsole
                 _searchLineIndex = -1;
             }
             SetSearch(_isSearchEnabled);
+        }
+
+        private void ToggleHelp()
+        {
+            _isHelpEnabled = !_isHelpEnabled;
         }
 
         private void SetSearch(bool isSearchEnabled)

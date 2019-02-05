@@ -8,17 +8,32 @@ namespace AnyConsole.InternalComponents
     {
         private string _value;
         private DriveInfo _drive;
+        private DriveInfo[] _drives;
 
         public DiskFreeComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
-            var drives = DriveInfo.GetDrives();
-            // get the drive the app is using
-            var drive = Path.GetPathRoot(Assembly.GetExecutingAssembly().Location);
-            _drive = drives.Where(x => x.Name.Equals(drive)).FirstOrDefault();
+            _drives = DriveInfo.GetDrives();
         }
 
         public override string Render(object parameters)
         {
+            if (_drive == null)
+            {
+                if (parameters != null)
+                {
+                    // get the drive provided by the client
+                    if (_drives.Any(x => x.Name.Equals(parameters.ToString(), System.StringComparison.InvariantCultureIgnoreCase)))
+                        _drive = _drives.Where(x => x.Name.Equals(parameters.ToString(), System.StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                    else
+                        throw new System.ArgumentOutOfRangeException($"The drive {parameters.ToString()} is not a valid configuration option. Please choose one of the following: {string.Join(",", _drives.Select(x => x.Name).ToArray())}");
+                }
+                else
+                {
+                    // get the drive the app is using as a default                    
+                    var applicationDrive = Path.GetPathRoot(Assembly.GetExecutingAssembly().Location);
+                    _drive = _drives.Where(x => x.Name.Equals(applicationDrive, System.StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                }
+            }
             try
             {
                 return _value;

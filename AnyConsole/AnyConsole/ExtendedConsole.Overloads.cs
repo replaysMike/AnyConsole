@@ -14,7 +14,32 @@ namespace AnyConsole
         /// <param name="location">The location to render the text</param>
         public void WriteRow(string rowName, Component component, ColumnLocation location)
         {
-            AddRowContent(rowName, component, string.Empty, location, 0, null, null);
+            AddRowContent(rowName, null, component, string.Empty, location, 0, null, null, null);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="location">The location to render the text</param>
+        public void WriteRow(string rowName, string label, Component component, ColumnLocation location)
+        {
+            AddRowContent(rowName, label, component, string.Empty, location, 0, null, null, null);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="location">The location to render the text</param>
+        /// <param name="componentParameter">A parameter to pass to the component</param>
+        public void WriteRow(string rowName, string label, Component component, ColumnLocation location, object componentParameter)
+        {
+            AddRowContent(rowName, label, component, string.Empty, location, 0, componentParameter, null, null);
         }
 
         /// <summary>
@@ -28,7 +53,22 @@ namespace AnyConsole
         {
             if (component != Component.Custom)
                 throw new InvalidOperationException($"Argument component must be specified as Custom when providing a componentName of '{componentName}'");
-            AddRowContent(rowName, component, componentName, location, 0, null, null);
+            AddRowContent(rowName, null, component, componentName, location, 0, null, null, null);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="componentName">The name of the custom component to render</param>
+        /// <param name="location">The location to render the text</param>
+        public void WriteRow(string rowName, string label, Component component, string componentName, ColumnLocation location)
+        {
+            if (component != Component.Custom)
+                throw new InvalidOperationException($"Argument component must be specified as Custom when providing a componentName of '{componentName}'");
+            AddRowContent(rowName, label, component, componentName, location, 0, null, null, null);
         }
 
         /// <summary>
@@ -43,7 +83,23 @@ namespace AnyConsole
         {
             if (component != Component.Custom)
                 throw new InvalidOperationException($"Argument component must be specified as Custom when providing a componentName of '{componentName}'");
-            AddRowContent(rowName, component, componentName, location, 0, foregroundColor, null);
+            AddRowContent(rowName, null, component, componentName, location, 0, null, foregroundColor, null);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="componentName">The name of the custom component to render</param>
+        /// <param name="location">The location to render the text</param>
+        /// <param name="foregroundColor">Foreground color</param>
+        public void WriteRow(string rowName, string label, Component component, string componentName, ColumnLocation location, Color foregroundColor)
+        {
+            if (component != Component.Custom)
+                throw new InvalidOperationException($"Argument component must be specified as Custom when providing a componentName of '{componentName}'");
+            AddRowContent(rowName, label, component, componentName, location, 0, null, foregroundColor, null);
         }
 
         /// <summary>
@@ -59,7 +115,24 @@ namespace AnyConsole
         {
             if (component != Component.Custom)
                 throw new InvalidOperationException($"Argument component must be specified as Custom when providing a componentName of '{componentName}'");
-            AddRowContent(rowName, component, componentName, location, 0, foregroundColor, backgroundColor);
+            AddRowContent(rowName, null, component, componentName, location, 0, null, foregroundColor, backgroundColor);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="componentName">The name of the custom component to render</param>
+        /// <param name="location">The location to render the text</param>
+        /// <param name="foregroundColor">Foreground color</param>
+        /// <param name="backgroundColor">Background color</param>
+        public void WriteRow(string rowName, string label, Component component, string componentName, ColumnLocation location, Color foregroundColor, Color backgroundColor)
+        {
+            if (component != Component.Custom)
+                throw new InvalidOperationException($"Argument component must be specified as Custom when providing a componentName of '{componentName}'");
+            AddRowContent(rowName, label, component, componentName, location, 0, null, foregroundColor, backgroundColor);
         }
 
         /// <summary>
@@ -71,7 +144,20 @@ namespace AnyConsole
         /// <param name="foregroundColor"></param>
         public void WriteRow(string rowName, Component component, ColumnLocation location, Color foregroundColor)
         {
-            AddRowContent(rowName, component, string.Empty, location, 0, foregroundColor, null);
+            AddRowContent(rowName, null, component, string.Empty, location, 0, null, foregroundColor, null);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="location">The location to render the text</param>
+        /// <param name="foregroundColor"></param>
+        public void WriteRow(string rowName, string label, Component component, ColumnLocation location, Color foregroundColor)
+        {
+            AddRowContent(rowName, label, component, string.Empty, location, 0, null, foregroundColor, null);
         }
 
         /// <summary>
@@ -83,7 +169,20 @@ namespace AnyConsole
         /// <param name="foregroundColor"></param>
         public void WriteRow(string rowName, Component component, ColumnLocation location, Color foregroundColor, Color backgroundColor)
         {
-            AddRowContent(rowName, component, string.Empty, location, 0, foregroundColor, backgroundColor);
+            AddRowContent(rowName, null, component, string.Empty, location, 0, null, foregroundColor, backgroundColor);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
+        /// <param name="label">A label to prepend to the value</param>
+        /// <param name="component">The component to render</param>
+        /// <param name="location">The location to render the text</param>
+        /// <param name="foregroundColor"></param>
+        public void WriteRow(string rowName, string label, Component component, ColumnLocation location, Color foregroundColor, Color backgroundColor)
+        {
+            AddRowContent(rowName, label, component, string.Empty, location, 0, null, foregroundColor, backgroundColor);
         }
 
         /// <summary>
@@ -141,11 +240,11 @@ namespace AnyConsole
             _staticRowContentBuilder[rowName].Add(new RowContent(text, location, offset, foregroundColor, backgroundColor));
         }
 
-        private void AddRowContent(string rowName, Component component, string componentName, ColumnLocation location, int offset, Color? foregroundColor, Color? backgroundColor)
+        private void AddRowContent(string rowName, string label, Component component, string componentName, ColumnLocation location, int offset, object componentParameter, Color? foregroundColor, Color? backgroundColor)
         {
             if (!_staticRowContentBuilder.ContainsKey(rowName))
                 _staticRowContentBuilder.Add(rowName, new List<RowContent>());
-            _staticRowContentBuilder[rowName].Add(new RowContent(component, componentName, location, offset, foregroundColor, backgroundColor));
+            _staticRowContentBuilder[rowName].Add(new RowContent(component, label, componentName, location, offset, componentParameter, foregroundColor, backgroundColor));
         }
     }
 }

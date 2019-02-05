@@ -15,6 +15,9 @@ namespace AnyConsole
         internal IDictionary<string, Type> CustomComponents { get; }
         internal WindowFrame WindowFrame { get; set; }
         internal ConsoleDataContext DataContext { get; set; }
+        internal TimeSpan RedrawTimeSpan { get; set; }
+        internal int MaxHistoryLines { get; set; }
+        internal IHelpScreen HelpScreen { get; set; }
 
         public ExtendedConsoleConfiguration()
         {
@@ -22,6 +25,7 @@ namespace AnyConsole
             CustomComponents = new Dictionary<string, Type>();
             LogHistoryContainer = new LogHistoryContainer(RowLocation.Top, 0);
             WindowFrame = WindowFrame.None;
+            RedrawTimeSpan = TimeSpan.FromMilliseconds(100);
         }
 
         /// <summary>
@@ -34,6 +38,24 @@ namespace AnyConsole
         }
 
         /// <summary>
+        /// Set the interval in which the UI will issue redraw frames. Default: 100ms
+        /// </summary>
+        /// <param name="timeSpan"></param>
+        public void SetUpdateInterval(TimeSpan timeSpan)
+        {
+            RedrawTimeSpan = timeSpan;
+        }
+
+        /// <summary>
+        /// Set the max number of history lines to keep (buffer lines). Default: 10,000
+        /// </summary>
+        /// <param name="timeSpan"></param>
+        public void SetMaxHistoryLines(int maxHistoryLines)
+        {
+            MaxHistoryLines = maxHistoryLines;
+        }
+
+        /// <summary>
         /// Set a window frame
         /// </summary>
         /// <param name="color"></param>
@@ -41,6 +63,16 @@ namespace AnyConsole
         public void SetWindowFrame(Color color, int size)
         {
             WindowFrame = new WindowFrame(color, size);
+        }
+
+        public void SetHelpScreen()
+        {
+            HelpScreen = new DefaultHelpScreen();
+        }
+
+        public void SetHelpScreen(IHelpScreen helpScreen)
+        {
+            HelpScreen = helpScreen;
         }
 
         /// <summary>

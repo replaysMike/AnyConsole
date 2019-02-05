@@ -78,7 +78,6 @@ namespace AnyConsole
 
             if (_content?.Any() == true)
             {
-                //var componentsToRender = _content.Where(x => x.ContentType == RowContent.ContentTypes.Component).Select(x => x.ComponentName);
                 var contentHasUpdates = _renderer.ComponentRenderer.HasUpdates(_content);
 
                 if (contentHasUpdates)
@@ -105,9 +104,7 @@ namespace AnyConsole
                         if (item.ContentType == RowContent.ContentTypes.Static)
                             renderedContent = item.StaticContent;
                         else if (item.ContentType == RowContent.ContentTypes.Component)
-                        {
-                            renderedContent = _renderer.ComponentRenderer.Render(item.Component, item.ComponentName);
-                        }
+                            renderedContent = $"{item.Label}{_renderer.ComponentRenderer.Render(item.Component, item.ComponentName, item.ComponentParameter)}";
 
                         if (item.Location == ColumnLocation.Right)
                             renderedContent = new string(' ', _renderer.ConsoleOptions.TextSpacing) + renderedContent;
@@ -125,6 +122,7 @@ namespace AnyConsole
                             _rightMargin += renderedContent.Length;
                         else
                             _leftMargin += renderedContent.Length;
+                        item.RenderCount++;
                     }
                 }
             }

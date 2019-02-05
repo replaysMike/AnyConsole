@@ -5,6 +5,7 @@
     /// </summary>
     public enum Component
     {
+        StaticContent,
         DateTime,
         DateTimeUtc,
         Date,
