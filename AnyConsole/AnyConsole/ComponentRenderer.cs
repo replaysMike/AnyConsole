@@ -111,17 +111,17 @@ namespace AnyConsole
             switch (component)
             {
                 case Component.DateTime:
-                    return _builtInComponents[component].Render($"YYYY-mm-dd hh:mm:ss tt");
+                    return _builtInComponents[component].Render(parameters ?? $"yyyy-MM-dd hh:mm:ss tt");
                 case Component.DateTimeUtc:
-                    return _builtInComponents[component].Render($"YYYY-mm-dd hh:mm:ss tt");
+                    return _builtInComponents[component].Render(parameters ?? $"yyyy-MM-dd hh:mm:ss tt");
                 case Component.Date:
-                    return _builtInComponents[component].Render($"YYYY-mm-dd");
+                    return _builtInComponents[component].Render(parameters ?? $"yyyy-MM-dd");
                 case Component.DateUtc:
-                    return _builtInComponents[component].Render($"YYYY-mm-dd");
+                    return _builtInComponents[component].Render(parameters ?? $"yyyy-MM-dd");
                 case Component.Time:
-                    return _builtInComponents[component].Render($"hh:mm:ss tt");
+                    return _builtInComponents[component].Render(parameters ?? $"hh:mm:ss tt");
                 case Component.TimeUtc:
-                    return _builtInComponents[component].Render($"hh:mm:ss tt");
+                    return _builtInComponents[component].Render(parameters ?? $"hh:mm:ss tt");
                 case Component.Custom:
                     return Render(componentName, null);
                 default:

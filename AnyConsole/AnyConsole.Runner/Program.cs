@@ -25,11 +25,11 @@ namespace AnyConsole.Runner
             });
             console.OnKeyPress += Console_OnKeyPress;
             console.WriteRow("Header", "Game Server", ColumnLocation.Left, Color.Yellow);
-            console.WriteRow("Header", Component.Time, ColumnLocation.Right);
+            console.WriteRow("Header", Component.DateTimeUtc, ColumnLocation.Right, componentParameter: "MMMM dd yyyy hh:mm tt");
             console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Color.FromArgb(60, 60, 60));
             console.WriteRow("SubHeader", Component.Custom, "TestComponent", ColumnLocation.Right);
             console.WriteRow("SubHeader", "Mem Used: ", Component.MemoryUsed, ColumnLocation.Right);
-            console.WriteRow("SubHeader", "C: (Free) ", Component.DiskFree, ColumnLocation.Right, @"C:\");
+            console.WriteRow("SubHeader", "C: (Free) ", Component.DiskFree, ColumnLocation.Right, componentParameter: @"C:\");
             console.WriteRow("Footer", "C: (Used) ", Component.DiskUsed, ColumnLocation.Left, componentParameter: @"C:\");
             console.WriteRow("Footer", "IP: ", Component.IP, ColumnLocation.Left, componentParameter: 2);
             console.WriteRow("Footer", Component.TotalLinesBuffered, ColumnLocation.Right);

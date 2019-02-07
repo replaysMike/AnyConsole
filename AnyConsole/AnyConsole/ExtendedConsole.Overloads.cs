@@ -21,6 +21,18 @@ namespace AnyConsole
         /// Write to a static row
         /// </summary>
         /// <param name="rowName"></param>
+        /// <param name="component">The component to render</param>
+        /// <param name="location">The location to render the text</param>
+        /// <param name="componentParameter">A parameter to pass to the component</param>
+        public void WriteRow(string rowName, Component component, ColumnLocation location, object componentParameter)
+        {
+            AddRowContent(rowName, null, component, string.Empty, location, 0, componentParameter, null, null);
+        }
+
+        /// <summary>
+        /// Write to a static row
+        /// </summary>
+        /// <param name="rowName"></param>
         /// <param name="label">A label to prepend to the value</param>
         /// <param name="component">The component to render</param>
         /// <param name="location">The location to render the text</param>
