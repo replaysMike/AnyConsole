@@ -41,7 +41,7 @@ console.Configure(config =>
     config.SetHelpScreen();
 });
 console.OnKeyPress += Console_OnKeyPress;
-console.WriteRow("Header", "My Game Server", ColumnLocation.Left, Color.Yellow); // show text on the left
+console.WriteRow("Header", "Test Console", ColumnLocation.Left, Color.Yellow); // show text on the left
 console.WriteRow("Header", Component.Time, ColumnLocation.Right); // show the time on the right
 console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Color.FromArgb(60, 60, 60));
 console.Start();
