@@ -24,7 +24,7 @@ namespace AnyConsole.Runner
                 //config.SetWindowFrame(Color.FromArgb(200, 200, 30), 1);
             });
             console.OnKeyPress += Console_OnKeyPress;
-            console.WriteRow("Header", "Game Server", ColumnLocation.Left, Color.Yellow);
+            console.WriteRow("Header", "Test Console", ColumnLocation.Left, Color.Yellow);
             console.WriteRow("Header", Component.DateTimeUtc, ColumnLocation.Right, componentParameter: "MMMM dd yyyy hh:mm tt");
             console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Color.FromArgb(60, 60, 60));
             console.WriteRow("SubHeader", Component.Custom, "TestComponent", ColumnLocation.Right);
