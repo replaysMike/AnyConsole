@@ -59,6 +59,16 @@ console.WaitForClose();
 - Text output formatting of logs through stdout hijacking
 - Multithreaded
 
+## Built-in key handling
+
+When enabled (by default) some basic operation is permitted. The following keys will be bound:
+
+* [H] - display help
+* [Home] - go to start of buffer log
+* [End] / [Esc] - go to end of buffer log and resume scrolling
+* [Q] - quit application
+* [MouseScroll] - scroll the buffer log
+
 ## Components
 
 Components allow you to easily add UI elements to your console application, that self update and render. Common usage would be a DateTime component that always displays the current time.
@@ -70,6 +80,10 @@ Components allow you to easily add UI elements to your console application, that
 - Cpu usage
 - IP Address
 - Log search, buffer information
+
+### Log search component
+
+When the LogSearch component is added to a row, the console will listen for the CTRL-S key to enable searching of the log. Enter some search text and press F3 or SHIFT-F3 to iterate through the results.
 
 ### Custom components
 
