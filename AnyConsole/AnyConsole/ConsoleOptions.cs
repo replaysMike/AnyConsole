@@ -7,7 +7,7 @@ namespace AnyConsole
     /// </summary>
     public class ConsoleOptions
     {
-        private static readonly RenderOptions _defaultRenderOptions = RenderOptions.HideCursor | RenderOptions.FadeHistory;
+        private static readonly RenderOptions _defaultRenderOptions = RenderOptions.HideCursor;
         private static readonly InputOptions _defaultInputOptions = InputOptions.UseBuiltInKeyOperations;
         private static readonly int _defaultTextSpacing = 1;
 

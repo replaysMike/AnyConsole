@@ -27,13 +27,16 @@
             base.Tick(tickCount);
 
             var extendedConsole = _consoleDataContext.GetData<ExtendedConsole>("ExtendedConsole");
-            var currentLogLine = extendedConsole._bufferYCursor;
-            var isPaused = currentLogLine > 0;
-
-            if (_isPaused != isPaused)
+            if (extendedConsole != null && extendedConsole._fullLogHistory != null)
             {
-                _isPaused = isPaused;
-                HasUpdates = true;
+                var currentLogLine = extendedConsole._bufferYCursor;
+                var isPaused = currentLogLine > 0;
+
+                if (_isPaused != isPaused)
+                {
+                    _isPaused = isPaused;
+                    HasUpdates = true;
+                }
             }
         }
     }

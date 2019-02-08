@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace AnyConsole.Runner
@@ -7,26 +8,38 @@ namespace AnyConsole.Runner
     {
         static void Main(string[] args)
         {
-            var console = new ExtendedConsole(new ConsoleOptions(RenderOptions.FadeHistory | RenderOptions.HideCursor, InputOptions.UseBuiltInKeyOperations));
+            var console = new ExtendedConsole(new ConsoleOptions(RenderOptions.HideCursor, InputOptions.UseBuiltInKeyOperations));
             var context = new ConsoleDataContext();
             console.Configure(config =>
             {
-                config.SetStaticRow("Header", RowLocation.Top, Color.White, Color.DarkRed);
-                config.SetStaticRow("SubHeader", RowLocation.Top, 1, Color.White, Color.FromArgb(30, 30, 30));
-                config.SetStaticRow("Footer", RowLocation.Bottom, Color.White, Color.DarkBlue);
-                config.SetLogHistoryContainer(RowLocation.Top, 2);
+                // use a custom color palette for drawing
+                config.SetColorPalette(new Dictionary<Enum, Color>{
+                    { Style.Foreground, Color.White },
+                    { Style.Background, Color.Black },
+                    { Style.HeaderBackground, Color.DarkRed },
+                    { Style.SubHeaderBackground, Color.FromArgb(30, 30, 30) },
+                    { Style.SubHeaderForeground, Color.FromArgb(60, 60, 60) },
+                    { Style.FooterBackground, Color.DarkBlue },
+                    { Style.LogHistoryBackground, Color.FromArgb(100, 100, 100) },
+                    { Style.Highlight, Color.Yellow },
+                });
+                config.SetStaticRow("Header", RowLocation.Top, Style.Foreground, Style.HeaderBackground);
+                config.SetStaticRow("SubHeader", RowLocation.Top, 1, Style.Foreground, Style.SubHeaderBackground);
+                config.SetStaticRow("Footer", RowLocation.Bottom, Style.Foreground, Style.FooterBackground);
+                config.SetLogHistoryContainer(RowLocation.Top, 2, Style.LogHistoryBackground);
                 config.RegisterComponent<RandomNumberComponent>("TestComponent");
                 config.SetDataContext(context);
                 config.SetUpdateInterval(TimeSpan.FromMilliseconds(100));
                 config.SetMaxHistoryLines(1000);
-                config.SetHelpScreen();
+                config.SetHelpScreen(Style.Foreground, Style.FooterBackground);
+                config.SetLogPrependString("| ");
                 // todo: build frame dimensions into static rows
                 //config.SetWindowFrame(Color.FromArgb(200, 200, 30), 1);
             });
             console.OnKeyPress += Console_OnKeyPress;
-            console.WriteRow("Header", "Test Console", ColumnLocation.Left, Color.Yellow);
+            console.WriteRow("Header", "Test Console", ColumnLocation.Left, Style.Highlight);
             console.WriteRow("Header", Component.DateTimeUtc, ColumnLocation.Right, componentParameter: "MMMM dd yyyy hh:mm tt");
-            console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Color.FromArgb(60, 60, 60));
+            console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Style.SubHeaderForeground);
             console.WriteRow("SubHeader", Component.Custom, "TestComponent", ColumnLocation.Right);
             console.WriteRow("SubHeader", "Mem Used: ", Component.MemoryUsed, ColumnLocation.Right);
             console.WriteRow("SubHeader", "C: (Free) ", Component.DiskFree, ColumnLocation.Right, componentParameter: @"C:\");
@@ -36,7 +49,9 @@ namespace AnyConsole.Runner
             console.WriteRow("Footer", Component.CurrentBufferLine, ColumnLocation.Right);
             console.Start();
 
-            console.WriteLine("FIRST FIRST FIRST FIRST");
+            // you can use either the console instance, or the regular Console to perform writes
+            console.WriteAscii("FIRST");
+            // here we will use the instance
             console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
             console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
             console.WriteLine("Pellentesque hendrerit dui sit amet ultricies iaculis.");
@@ -386,10 +401,8 @@ namespace AnyConsole.Runner
             console.WriteLine("Vestibulum sollicitudin ipsum vel neque vestibulum lacinia.");
             console.WriteLine("Cras sed urna venenatis, sollicitudin est sit amet, fermentum nibh.");
 
-            console.WriteLine("LAST LAST LAST LAST LAST LAST");
-
+            console.WriteAscii("LAST");
             console.WaitForClose();
-
         }
 
         private static void Console_OnKeyPress(KeyPressEventArgs e)

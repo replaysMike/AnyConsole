@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using Colorful;
+using System;
+using System.Drawing;
 
 namespace AnyConsole
 {
@@ -20,29 +22,32 @@ namespace AnyConsole
         public int Offset { get; }
         public Color? ForegroundColor { get; }
         public Color? BackgroundColor { get; }
+        public Enum ForegroundColorPalette { get; }
+        public Enum BackgroundColorPalette { get; }
         public long RenderCount { get; set; }
+        public FigletFont Font { get; set; }
 
-        public RowContent(Component component, string componentName) : this(component, null, componentName, ColumnLocation.Left, 0, null, null, null)
+        public RowContent(Component component, string componentName) : this(component, null, componentName, ColumnLocation.Left, 0, null, default(Color?), default(Color?))
         {
         }
 
-        public RowContent(Component component, string label, string componentName) : this(component, label, componentName, ColumnLocation.Left, 0, null, null, null)
+        public RowContent(Component component, string label, string componentName) : this(component, label, componentName, ColumnLocation.Left, 0, null, default(Color?), default(Color?))
         {
         }
 
-        public RowContent(Component component, string componentName, int offset) : this(component, null, componentName, ColumnLocation.Left, offset, null, null, null)
+        public RowContent(Component component, string componentName, int offset) : this(component, null, componentName, ColumnLocation.Left, offset, null, default(Color?), default(Color?))
         {
         }
 
-        public RowContent(Component component, string componentName, ColumnLocation location) : this(component, null, componentName, location, 0, null, null, null)
+        public RowContent(Component component, string componentName, ColumnLocation location) : this(component, null, componentName, location, 0, null, default(Color?), default(Color?))
         {
         }
 
-        public RowContent(Component component, string label, string componentName, ColumnLocation location) : this(component, label, componentName, location, 0, null, null, null)
+        public RowContent(Component component, string label, string componentName, ColumnLocation location) : this(component, label, componentName, location, 0, null, default(Color?), default(Color?))
         {
         }
 
-        public RowContent(Component component, string componentName, ColumnLocation location, int offset) : this(component, null, componentName, location, offset, null, null, null)
+        public RowContent(Component component, string componentName, ColumnLocation location, int offset) : this(component, null, componentName, location, offset, null, default(Color?), default(Color?))
         {
         }
 
@@ -50,7 +55,16 @@ namespace AnyConsole
         {
         }
 
+        public RowContent(Component component, string componentName, ColumnLocation location, int offset, Enum foreColor) : this(component, null, componentName, location, offset, null, foreColor, null)
+        {
+        }
+
         public RowContent(Component component, string label, string componentName, ColumnLocation location, int offset, object componentParameter, Color? foreColor, Color? backColor)
+            : this(component, label, componentName, location, offset, componentParameter, foreColor, backColor, null)
+        {
+        }
+
+        public RowContent(Component component, string label, string componentName, ColumnLocation location, int offset, object componentParameter, Color? foreColor, Color? backColor, FigletFont font)
         {
             ContentType = ContentTypes.Component;
             Label = label;
@@ -61,9 +75,34 @@ namespace AnyConsole
             Offset = offset;
             ForegroundColor = foreColor;
             BackgroundColor = backColor;
+            Font = font;
+        }
+
+        public RowContent(Component component, string label, string componentName, ColumnLocation location, int offset, object componentParameter, Enum foreColor, Enum backColor)
+            : this(component, label, componentName, location, offset, componentParameter, foreColor, backColor, null)
+        {
+        }
+
+        public RowContent(Component component, string label, string componentName, ColumnLocation location, int offset, object componentParameter, Enum foreColor, Enum backColor, FigletFont font)
+        {
+            ContentType = ContentTypes.Component;
+            Label = label;
+            Component = component;
+            ComponentParameter = componentParameter;
+            ComponentName = componentName;
+            Location = location;
+            Offset = offset;
+            ForegroundColorPalette = foreColor;
+            BackgroundColorPalette = backColor;
+            Font = font;
         }
 
         public RowContent(string staticContent, ColumnLocation location, int offset, Color? foreColor, Color? backColor)
+            : this(staticContent, location, offset, foreColor, backColor, null)
+        {
+        }
+
+        public RowContent(string staticContent, ColumnLocation location, int offset, Color? foreColor, Color? backColor, FigletFont font)
         {
             ContentType = ContentTypes.Static;
             Component = Component.StaticContent;
@@ -72,6 +111,24 @@ namespace AnyConsole
             Offset = offset;
             ForegroundColor = foreColor;
             BackgroundColor = backColor;
+            Font = font;
+        }
+
+        public RowContent(string staticContent, ColumnLocation location, int offset, Enum foreColor, Enum backColor)
+            : this(staticContent, location, offset, foreColor, backColor, null)
+        {
+        }
+
+        public RowContent(string staticContent, ColumnLocation location, int offset, Enum foreColor, Enum backColor, FigletFont font)
+        {
+            ContentType = ContentTypes.Static;
+            Component = Component.StaticContent;
+            StaticContent = staticContent;
+            Location = location;
+            Offset = offset;
+            ForegroundColorPalette = foreColor;
+            BackgroundColorPalette = backColor;
+            Font = font;
         }
 
         public override string ToString()

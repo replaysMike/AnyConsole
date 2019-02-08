@@ -31,5 +31,15 @@ namespace AnyConsole
         /// The default background color for the row
         /// </summary>
         public Color? BackgroundColor { get; internal set; }
+
+        /// <summary>
+        /// The default foreground color for the row
+        /// </summary>
+        public Enum ForegroundColorPalette { get; internal set; }
+
+        /// <summary>
+        /// The default background color for the row
+        /// </summary>
+        public Enum BackgroundColorPalette { get; internal set; }
     }
 }
