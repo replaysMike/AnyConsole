@@ -8,6 +8,7 @@
 
         public LogBufferTotalLinesComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
+            HasUpdates = true;
         }
 
         public override string Render(object parameters)
@@ -27,12 +28,15 @@
             base.Tick(tickCount);
 
             var extendedConsole = _consoleDataContext.GetData<ExtendedConsole>("ExtendedConsole");
-            var totalLogLines = extendedConsole._fullLogHistory.Count;
-
-            if(_totalLogLines != totalLogLines)
+            if (extendedConsole != null && extendedConsole._fullLogHistory != null)
             {
-                _totalLogLines = totalLogLines;
-                HasUpdates = true;
+                var totalLogLines = extendedConsole._fullLogHistory.Count;
+
+                if (_totalLogLines != totalLogLines)
+                {
+                    _totalLogLines = totalLogLines;
+                    HasUpdates = true;
+                }
             }
         }
     }

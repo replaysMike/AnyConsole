@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 
 namespace AnyConsole
 {
@@ -8,6 +9,8 @@ namespace AnyConsole
         public int Index { get; set; }
         public Color? ForegroundColor { get; set; }
         public Color? BackgroundColor { get; set; }
+        public Enum ForegroundColorPalette { get; set; }
+        public Enum BackgroundColorPalette { get; set; }
 
         public LogHistoryContainer(RowLocation location, int index)
         {

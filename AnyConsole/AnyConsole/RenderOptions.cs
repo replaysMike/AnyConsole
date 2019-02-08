@@ -14,6 +14,7 @@ namespace AnyConsole
         None = 0,
         /// <summary>
         /// Fade the historical log near the top of the screen
+        /// Warning: This uses up additional colors from your 16 color palette
         /// </summary>
         FadeHistory = 1,
         /// <summary>

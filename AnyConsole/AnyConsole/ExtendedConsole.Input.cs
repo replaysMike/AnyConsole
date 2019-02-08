@@ -90,6 +90,7 @@ namespace AnyConsole
                                                     break;
                                                 case ConsoleKey.Q:
                                                     // quit
+                                                    System.Diagnostics.Debug.WriteLine("Quitting....");
                                                     Close();
                                                     Dispose();
                                                     break;

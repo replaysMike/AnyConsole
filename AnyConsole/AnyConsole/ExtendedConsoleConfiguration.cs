@@ -18,6 +18,8 @@ namespace AnyConsole
         internal TimeSpan RedrawTimeSpan { get; set; }
         internal int MaxHistoryLines { get; set; }
         internal IHelpScreen HelpScreen { get; set; }
+        internal ColorPalette ColorPalette { get; set; }
+        internal string Prepend { get; set; } = "> ";
 
         public ExtendedConsoleConfiguration()
         {
@@ -56,6 +58,15 @@ namespace AnyConsole
         }
 
         /// <summary>
+        /// Set a custom color palette to reference by name
+        /// </summary>
+        /// <param name="colorPalette"></param>
+        public void SetColorPalette(ColorPalette colorPalette)
+        {
+            ColorPalette = colorPalette;
+        }
+
+        /// <summary>
         /// Set a window frame
         /// </summary>
         /// <param name="color"></param>
@@ -65,14 +76,42 @@ namespace AnyConsole
             WindowFrame = new WindowFrame(color, size);
         }
 
-        public void SetHelpScreen()
+        /// <summary>
+        /// Enable the default help screen
+        /// </summary>
+        /// <param name="foregroundColor"></param>
+        /// <param name="backgroundColor"></param>
+        public void SetHelpScreen(Color foregroundColor, Color backgroundColor)
         {
-            HelpScreen = new DefaultHelpScreen();
+            HelpScreen = new DefaultHelpScreen(foregroundColor, backgroundColor);
         }
 
+        /// <summary>
+        /// Enable the default help screen
+        /// </summary>
+        /// <param name="foregroundColor"></param>
+        /// <param name="backgroundColor"></param>
+        public void SetHelpScreen(Enum foregroundColor, Enum backgroundColor)
+        {
+            HelpScreen = new DefaultHelpScreen(foregroundColor, backgroundColor);
+        }
+
+        /// <summary>
+        /// Set the help screen to use
+        /// </summary>
+        /// <param name="helpScreen"></param>
         public void SetHelpScreen(IHelpScreen helpScreen)
         {
             HelpScreen = helpScreen;
+        }
+
+        /// <summary>
+        /// Set the string prepended to each log history entry
+        /// </summary>
+        /// <param name="prependString"></param>
+        public void SetLogPrependString(string prependString)
+        {
+            Prepend = prependString;
         }
 
         /// <summary>
@@ -130,6 +169,18 @@ namespace AnyConsole
         /// </summary>
         /// <param name="location"></param>
         /// <param name="index"></param>
+        public void SetLogHistoryContainer(RowLocation location, int index, Enum foregroundColor)
+        {
+            LogHistoryContainer.Location = location;
+            LogHistoryContainer.Index = index;
+            LogHistoryContainer.ForegroundColorPalette = foregroundColor;
+        }
+
+        /// <summary>
+        /// Set the location of where screen output will be buffered to
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="index"></param>
         public void SetLogHistoryContainer(RowLocation location, int index, Color foregroundColor, Color backgroundColor)
         {
             LogHistoryContainer.Location = location;
@@ -139,13 +190,16 @@ namespace AnyConsole
         }
 
         /// <summary>
-        /// Set a static console row
+        /// Set the location of where screen output will be buffered to
         /// </summary>
-        /// <param name="name">The name for the row</param>
-        /// <param name="location">The location to snap to</param>
-        public void SetStaticRow(string name, RowLocation location)
+        /// <param name="location"></param>
+        /// <param name="index"></param>
+        public void SetLogHistoryContainer(RowLocation location, int index, Enum foregroundColor, Enum backgroundColor)
         {
-            SetStaticRow(name, location, 0, null, null);
+            LogHistoryContainer.Location = location;
+            LogHistoryContainer.Index = index;
+            LogHistoryContainer.ForegroundColorPalette = foregroundColor;
+            LogHistoryContainer.BackgroundColorPalette = backgroundColor;
         }
 
         /// <summary>
@@ -153,7 +207,29 @@ namespace AnyConsole
         /// </summary>
         /// <param name="name">The name for the row</param>
         /// <param name="location">The location to snap to</param>
+        public void SetStaticRow(string name, RowLocation location)
+        {
+            SetStaticRow(name, location, 0, default(Color?), default(Color?));
+        }
+
+        /// <summary>
+        /// Set a static console row
+        /// </summary>
+        /// <param name="name">The name for the row</param>
+        /// <param name="location">The location to snap to</param>
+        /// <param name="foregroundColor">Foreground color to use</param>
         public void SetStaticRow(string name, RowLocation location, Color? foregroundColor)
+        {
+            SetStaticRow(name, location, 0, foregroundColor, null);
+        }
+
+        /// <summary>
+        /// Set a static console row
+        /// </summary>
+        /// <param name="name">The name for the row</param>
+        /// <param name="location">The location to snap to</param>
+        /// <param name="foregroundColor">Foreground color to use</param>
+        public void SetStaticRow(string name, RowLocation location, Enum foregroundColor)
         {
             SetStaticRow(name, location, 0, foregroundColor, null);
         }
@@ -175,12 +251,37 @@ namespace AnyConsole
         /// </summary>
         /// <param name="name">The name for the row</param>
         /// <param name="location">The location to snap to</param>
+        /// <param name="foregroundColor">The row's default foreground color</param>
+        /// <param name="backgroundColor">The row's default background color</param>
+        public void SetStaticRow(string name, RowLocation location, Enum foregroundColor, Enum backgroundColor)
+        {
+            SetStaticRow(name, location, 0, foregroundColor, backgroundColor);
+        }
+
+        /// <summary>
+        /// Set a static console row
+        /// </summary>
+        /// <param name="name">The name for the row</param>
+        /// <param name="location">The location to snap to</param>
         /// <param name="index">The 0-based row index to offset from the location</param>
         /// <param name="foregroundColor">The row's default foreground color</param>
         /// <param name="backgroundColor">The row's default background color</param>
         public void SetStaticRow(string name, RowLocation location, int index, Color? foregroundColor, Color? backgroundColor)
         {
             StaticRows.Add(new StaticRowConfig { Name = name, Location = location, Index = index, ForegroundColor = foregroundColor, BackgroundColor = backgroundColor });
+        }
+
+        /// <summary>
+        /// Set a static console row
+        /// </summary>
+        /// <param name="name">The name for the row</param>
+        /// <param name="location">The location to snap to</param>
+        /// <param name="index">The 0-based row index to offset from the location</param>
+        /// <param name="foregroundColor">The row's default foreground color</param>
+        /// <param name="backgroundColor">The row's default background color</param>
+        public void SetStaticRow(string name, RowLocation location, int index, Enum foregroundColor, Enum backgroundColor)
+        {
+            StaticRows.Add(new StaticRowConfig { Name = name, Location = location, Index = index, ForegroundColorPalette = foregroundColor, BackgroundColorPalette = backgroundColor });
         }
     }
 }

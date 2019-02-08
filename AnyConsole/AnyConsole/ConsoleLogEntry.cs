@@ -7,16 +7,25 @@ namespace AnyConsole
     /// </summary>
     public class ConsoleLogEntry
     {
+        /// <summary>
+        /// A special encoding character to indicate processing should be disabled
+        /// </summary>
+        public const char DisableProcessingCode = '\u0026';
+
+        public bool DisableProcessing { get; set; }
         public string OriginalLine { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
+        public string Prepend { get; set; } = string.Empty;
 
         /// <summary>
         /// Console redirection log entry
         /// </summary>
         /// <param name="originalLine"></param>
-        public ConsoleLogEntry(string originalLine)
+        public ConsoleLogEntry(string originalLine, string prepend, bool disableProcessing)
         {
             OriginalLine = originalLine;
+            Prepend = prepend;
+            DisableProcessing = disableProcessing;
         }
 
         /// <summary>
@@ -40,14 +49,17 @@ namespace AnyConsole
 
         private string FormatLine(string line)
         {
-            var parts = line.Split(new string[] { "|" }, StringSplitOptions.None);
-            if (parts.Length >= 3)
+            if (!DisableProcessing)
             {
-                var classParts = parts[parts.Length - 3].Split(new string[] { "." }, StringSplitOptions.None);
-                ClassName = classParts[classParts.Length - 1];
+                var parts = line.Split(new string[] { "|" }, StringSplitOptions.None);
+                if (parts.Length >= 3)
+                {
+                    var classParts = parts[parts.Length - 3].Split(new string[] { "." }, StringSplitOptions.None);
+                    ClassName = classParts[classParts.Length - 1];
+                }
+                if (parts.Length >= 2)
+                    return parts[parts.Length - 2];
             }
-            if (parts.Length >= 2)
-                return parts[parts.Length - 2];
             return line;
         }
     }

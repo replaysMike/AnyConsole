@@ -24,7 +24,7 @@ namespace AnyConsole
             var row = new string(' ', width);
             var lastRow = new string(' ', width - 1);
             var originalBackColor = Console.BackgroundColor;
-            Console.BackgroundColor = windowFrame.Color;
+            ColorTracker.SetBackColor(windowFrame.Color);
             Console.SetCursorPosition(0, 0);
             output.Write(row);
             Console.SetCursorPosition(0, height - 1);

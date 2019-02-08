@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AnyConsole.InternalComponents
+﻿namespace AnyConsole.InternalComponents
 {
     public class LogBufferCurrentLineComponent : BaseProcessComponent
     {
@@ -8,6 +6,7 @@ namespace AnyConsole.InternalComponents
 
         public LogBufferCurrentLineComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
+            HasUpdates = true;
         }
 
         public override string Render(object parameters)
@@ -27,11 +26,14 @@ namespace AnyConsole.InternalComponents
             base.Tick(tickCount);
 
             var extendedConsole = _consoleDataContext.GetData<ExtendedConsole>("ExtendedConsole");
-            var currentLogLine = extendedConsole._bufferYCursor;
-            if(_currentLogLine != currentLogLine)
+            if (extendedConsole != null)
             {
-                _currentLogLine = currentLogLine;
-                HasUpdates = true;
+                var currentLogLine = extendedConsole._bufferYCursor;
+                if (_currentLogLine != currentLogLine)
+                {
+                    _currentLogLine = currentLogLine;
+                    HasUpdates = true;
+                }
             }
         }
     }

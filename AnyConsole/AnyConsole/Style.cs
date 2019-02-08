@@ -2,6 +2,9 @@
 
 namespace AnyConsole
 {
+    /// <summary>
+    /// Internal styles for unspecified colors
+    /// </summary>
     internal static class Style
     {
         internal static readonly Color Background = Color.FromArgb(20, 20, 20);
