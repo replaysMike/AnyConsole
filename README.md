@@ -20,7 +20,7 @@ PM> Install-Package AnyConsole
 ## Visual Examples
 
 Example from Test Runner
-![AnyConsole](https://github.com/replaysMike/AnyConsole/wiki/screenshots/AnyConsole1.png)
+![AnyConsole](https://github.com/replaysMike/AnyConsole/wiki/screenshots/AnyConsole_example.png)
 Can be configured to contain any number of static rows with components, static text and colors.
 
 ## Usage
