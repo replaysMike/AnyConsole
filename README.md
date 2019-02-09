@@ -39,6 +39,9 @@ console.Configure(config =>
     config.SetUpdateInterval(TimeSpan.FromMilliseconds(100));
     config.SetMaxHistoryLines(1000);
     config.SetHelpScreen();
+    config.SetQuitHandler((consoleInstance) => {
+        // do something special when quit occurs
+    });
 });
 console.OnKeyPress += Console_OnKeyPress;
 console.WriteRow("Header", "Test Console", ColumnLocation.Left, Color.Yellow); // show text on the left
