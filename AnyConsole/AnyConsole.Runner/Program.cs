@@ -52,14 +52,18 @@ namespace AnyConsole.Runner
             console.WriteRow("Footer", "C: (Used) ", Component.DiskUsed, ColumnLocation.Left, componentParameter: @"C:\");
             console.WriteRow("Footer", "IP: ", Component.IP, ColumnLocation.Left, componentParameter: 2);
             console.WriteRow("Footer", Component.LogSearch, ColumnLocation.Left);
-            console.WriteRow("Footer", Component.TotalLinesBuffered, ColumnLocation.Right);
-            console.WriteRow("Footer", Component.CurrentBufferLine, ColumnLocation.Right);
+            console.WriteRow("Footer", Component.CapsLock, ColumnLocation.Left);
+            console.WriteRow("Footer", Component.ScrollLock, ColumnLocation.Left);
+            console.WriteRow("Footer", Component.NumLock, ColumnLocation.Left);
+            console.WriteRow("Footer", "of ", Component.TotalPagesBuffered, ColumnLocation.Right);
+            console.WriteRow("Footer", Component.CurrentBufferPage, ColumnLocation.Right);
+            console.WriteRow("Footer", Component.ScrollbackPaused, ColumnLocation.Right);
             console.Start();
 
             // you can use either the console instance, or the regular Console to perform writes
             console.WriteAscii("FIRST LINE");
             // here we will use the instance
-            /*console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+            console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
             console.WriteLine("Pellentesque hendrerit dui sit amet ultricies iaculis.");
             console.WriteLine("Nunc et elit non nibh hendrerit tristique.");
             console.WriteLine("Proin vehicula enim et bibendum scelerisque.");
@@ -407,7 +411,7 @@ namespace AnyConsole.Runner
             console.WriteLine("Vestibulum sollicitudin ipsum vel neque vestibulum lacinia.");
             console.WriteLine("Cras sed urna venenatis, sollicitudin est sit amet, fermentum nibh.");
 
-            console.WriteAscii("LAST LINE");*/
+            console.WriteAscii("LAST LINE");
             console.WaitForClose();
         }
 

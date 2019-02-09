@@ -1,12 +1,14 @@
-﻿namespace AnyConsole.InternalComponents
+﻿using System;
+
+namespace AnyConsole.InternalComponents
 {
-    public class LogBufferTotalLinesComponent : BaseProcessComponent
+    public class LogBufferTotalPagesComponent : BaseProcessComponent
     {
         private int _currentLogLine;
-        private int _totalLogLines;
+        private int _totalLogPages;
         private bool _isPaused;
 
-        public LogBufferTotalLinesComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
+        public LogBufferTotalPagesComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
             HasUpdates = true;
         }
@@ -15,7 +17,7 @@
         {
             try
             {
-                return $"{_totalLogLines}";
+                return $"{_totalLogPages}";
             }
             finally
             {
@@ -30,11 +32,12 @@
             var extendedConsole = _consoleDataContext.GetData<ExtendedConsole>("ExtendedConsole");
             if (extendedConsole != null && extendedConsole._fullLogHistory != null)
             {
-                var totalLogLines = extendedConsole._fullLogHistory.Count;
+                var itemsPerPage = (Console.WindowHeight - extendedConsole.Configuration.LogHistoryContainer.Index);
+                var totalLogPages = extendedConsole._fullLogHistory.Count / itemsPerPage;
 
-                if (_totalLogLines != totalLogLines)
+                if (_totalLogPages != totalLogPages)
                 {
-                    _totalLogLines = totalLogLines;
+                    _totalLogPages = totalLogPages;
                     HasUpdates = true;
                 }
             }

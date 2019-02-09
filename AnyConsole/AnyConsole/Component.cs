@@ -19,10 +19,15 @@
         CpuUsage,
         IP,
         NetworkTransfer,
+        CurrentBufferPage,
+        TotalPagesBuffered,
         CurrentBufferLine,
         TotalLinesBuffered,
         ScrollbackPaused,
         LogSearch,
+        CapsLock,
+        ScrollLock,
+        NumLock,
         Custom
     }
 }

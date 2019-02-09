@@ -4,7 +4,9 @@ namespace AnyConsole
 {
     public partial class ExtendedConsole
     {
-        
+        public bool CapsLockEnabled { get; private set; }
+        public bool NumLockEnabled { get; private set; }
+        public bool ScrollLockEnabled { get; private set; }
 
         private void InputThread()
         {
@@ -18,6 +20,11 @@ namespace AnyConsole
             var wasQuickEditModeEnabled = IsQuickEditModeEnabled(hWnd);
             if (wasQuickEditModeEnabled)
                 DisableQuickEditMode(hWnd);
+
+            // read initial key state
+            CapsLockEnabled = GetKeyState(VirtualKeyStates.VK_CAPITAL) == 1;
+            NumLockEnabled = GetKeyState(VirtualKeyStates.VK_NUMLOCK) == 1;
+            ScrollLockEnabled = GetKeyState(VirtualKeyStates.VK_SCROLL) == 1;
 
             while (!_isRunning.WaitOne(100))
             {
@@ -36,6 +43,9 @@ namespace AnyConsole
                                 case KEYBOARD_EVENT:
                                     var keyEvent = buffer[z].KeyEvent;
                                     var key = (ConsoleKey)keyEvent.wVirtualKeyCode;
+                                    CapsLockEnabled = keyEvent.dwControlKeyState.HasFlag(ControlKeyState.CAPSLOCK_ON);
+                                    ScrollLockEnabled = keyEvent.dwControlKeyState.HasFlag(ControlKeyState.SCROLLLOCK_ON);
+                                    NumLockEnabled = keyEvent.dwControlKeyState.HasFlag(ControlKeyState.NUMLOCK_ON);
                                     if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
                                     {
                                         // internal keyboard handling events

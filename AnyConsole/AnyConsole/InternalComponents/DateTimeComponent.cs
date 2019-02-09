@@ -13,7 +13,7 @@ namespace AnyConsole.InternalComponents
 
         public override string Render(object parameters)
         {
-            _format = parameters.ToString();
+            _format = parameters?.ToString() ?? "yyyy-MM-dd hh:mm:ss tt";
 
             try
             {

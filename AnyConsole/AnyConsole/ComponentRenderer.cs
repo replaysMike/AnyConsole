@@ -50,6 +50,8 @@ namespace AnyConsole
             _builtInComponents.Add(Component.TimeUtc, new DateTimeUtcComponent(_dataContext));
             _builtInComponents.Add(Component.CurrentBufferLine, new LogBufferCurrentLineComponent(_dataContext));
             _builtInComponents.Add(Component.TotalLinesBuffered, new LogBufferTotalLinesComponent(_dataContext));
+            _builtInComponents.Add(Component.CurrentBufferPage, new LogBufferCurrentPageComponent(_dataContext));
+            _builtInComponents.Add(Component.TotalPagesBuffered, new LogBufferTotalPagesComponent(_dataContext));
             _builtInComponents.Add(Component.ScrollbackPaused, new LogBufferIsPausedComponent(_dataContext));
             _builtInComponents.Add(Component.DiskUsed, new DiskUsedComponent(_dataContext));
             _builtInComponents.Add(Component.DiskFree, new DiskFreeComponent(_dataContext));
@@ -57,6 +59,9 @@ namespace AnyConsole
             _builtInComponents.Add(Component.MemoryUsed, new MemoryUsedComponent(_dataContext));
             _builtInComponents.Add(Component.CpuUsage, new CpuUsageComponent(_dataContext));
             _builtInComponents.Add(Component.IP, new IPAddressComponent(_dataContext));
+            _builtInComponents.Add(Component.CapsLock, new CapsLockComponent(_dataContext));
+            _builtInComponents.Add(Component.NumLock, new NumLockComponent(_dataContext));
+            _builtInComponents.Add(Component.ScrollLock, new ScrollLockComponent(_dataContext));
             _builtInComponents.Add(Component.LogSearch, new LogSearchComponent(_dataContext));
             foreach (var builtInComponent in _builtInComponents)
                 builtInComponent.Value.Setup(_dataContext, builtInComponent.GetType().Name, _console);

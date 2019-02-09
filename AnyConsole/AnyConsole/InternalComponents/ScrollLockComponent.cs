@@ -1,19 +1,19 @@
 ﻿namespace AnyConsole.InternalComponents
 {
-    public class LogBufferCurrentLineComponent : BaseProcessComponent
+    public class ScrollLockComponent : BaseProcessComponent
     {
-        private int _currentLogLine;
+        private string _value;
+        private string _format;
 
-        public LogBufferCurrentLineComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
+        public ScrollLockComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
-            HasUpdates = true;
         }
 
         public override string Render(object parameters)
         {
             try
             {
-                return $"{_currentLogLine}";
+                return _value;
             }
             finally
             {
@@ -28,12 +28,10 @@
             var extendedConsole = _consoleDataContext.GetData<ExtendedConsole>("ExtendedConsole");
             if (extendedConsole != null)
             {
-                var currentLogLine = extendedConsole._bufferYCursor;
-                if (currentLogLine < 0)
-                    currentLogLine = 0;
-                if (_currentLogLine != currentLogLine)
+                var newValue = extendedConsole.ScrollLockEnabled ? "SCROLL" : "      ";
+                if(!newValue.Equals(_value))
                 {
-                    _currentLogLine = currentLogLine;
+                    _value = newValue;
                     HasUpdates = true;
                 }
             }
