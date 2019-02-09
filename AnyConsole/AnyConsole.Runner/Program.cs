@@ -35,6 +35,10 @@ namespace AnyConsole.Runner
                 config.SetMaxHistoryLines(1000);
                 config.SetHelpScreen(Style.Foreground, Style.FooterBackground);
                 config.SetLogPrependString("| ");
+                config.SetQuitHandler((consoleInstance) =>
+                {
+                    Console.WriteLine("Quitting!");
+                });
                 // todo: build frame dimensions into static rows
                 //config.SetWindowFrame(Color.FromArgb(200, 200, 30), 1);
             });

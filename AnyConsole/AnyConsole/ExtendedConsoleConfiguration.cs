@@ -20,6 +20,8 @@ namespace AnyConsole
         internal IHelpScreen HelpScreen { get; set; }
         internal ColorPalette ColorPalette { get; set; }
         internal string Prepend { get; set; } = "> ";
+        internal Action<ExtendedConsole> QuitHandler { get; set; }
+
 
         public ExtendedConsoleConfiguration()
         {
@@ -28,6 +30,15 @@ namespace AnyConsole
             LogHistoryContainer = new LogHistoryContainer(RowLocation.Top, 0);
             WindowFrame = WindowFrame.None;
             RedrawTimeSpan = TimeSpan.FromMilliseconds(100);
+        }
+
+        /// <summary>
+        /// Set a handler to call when quit is requested
+        /// </summary>
+        /// <param name="action"></param>
+        public void SetQuitHandler(Action<ExtendedConsole> action)
+        {
+            QuitHandler = action;
         }
 
         /// <summary>

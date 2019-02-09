@@ -14,6 +14,7 @@ namespace AnyConsole
     /// </summary>
     public partial class ExtendedConsole : IExtendedConsole, IDisposable
     {
+        private bool _isDisposed;
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
         private StringBuilder _screenLogBuilder = new StringBuilder();
         private IDictionary<string, ICollection<RowContent>> _staticRowContentBuilder = new Dictionary<string, ICollection<RowContent>>();
@@ -22,14 +23,8 @@ namespace AnyConsole
         private ManualResetEvent _isRunning;
         private ManualResetEvent _bufferingComplete;
         private ManualResetEvent _frameDrawnComplete;
-        private bool _isDisposed;
-        private ExtendedConsoleConfiguration _config;
         private StaticRowRenderer _staticRowRenderer;
         private ComponentRenderer _componentRenderer;
-        internal int _bufferYCursor = 0;
-        internal ICollection<ConsoleLogEntry> _logHistory = new List<ConsoleLogEntry>();
-        internal List<ConsoleLogEntry> _fullLogHistory;
-        internal int LogDisplayHeight { get { return Console.WindowHeight - 3; } }
         private bool _disableLogProcessing = false;
         private bool _hasLogUpdates = false;
         private bool _isSearchEnabled = false;
@@ -38,15 +33,31 @@ namespace AnyConsole
         private int _searchLineIndex = -1;
         private SemaphoreSlim _historyLock = new SemaphoreSlim(1, 1);
         private HashSet<System.Drawing.Color> _colorTracker = new HashSet<System.Drawing.Color>();
+        internal int _bufferYCursor = 0;
+        internal ICollection<ConsoleLogEntry> _logHistory = new List<ConsoleLogEntry>();
+        internal List<ConsoleLogEntry> _fullLogHistory;
+        internal int LogDisplayHeight { get { return Console.WindowHeight - 3; } }
 
         #region Events
         public delegate void KeyPress(KeyPressEventArgs e);
         public delegate void MousePress(MousePressEventArgs e);
         public delegate void MouseScroll(MouseScrollEventArgs e);
         public delegate void MouseMove(MouseMoveEventArgs e);
+        /// <summary>
+        /// Fired on key press
+        /// </summary>
         public event KeyPress OnKeyPress;
+        /// <summary>
+        /// Fired on mouse press
+        /// </summary>
         public event MousePress OnMousePress;
+        /// <summary>
+        /// Fired on mouse scroll
+        /// </summary>
         public event MouseScroll OnMouseScroll;
+        /// <summary>
+        /// Fired on mouse move
+        /// </summary>
         public event MouseMove OnMouseMove;
         #endregion
 
@@ -55,6 +66,10 @@ namespace AnyConsole
         /// Console options
         /// </summary>
         public ConsoleOptions Options { get; }
+        /// <summary>
+        /// Console configuration
+        /// </summary>
+        public ExtendedConsoleConfiguration Configuration { get; private set; }
         #endregion
 
         /// <summary>
@@ -82,14 +97,14 @@ namespace AnyConsole
         {
             var consoleConfiguration = new ExtendedConsoleConfiguration();
             config.Invoke(consoleConfiguration);
-            _config = consoleConfiguration;
-            _config.DataContext.SetData<ExtendedConsole>("ExtendedConsole", this);
+            Configuration = consoleConfiguration;
+            Configuration.DataContext.SetData<ExtendedConsole>("ExtendedConsole", this);
 
-            _componentRenderer = new ComponentRenderer(this, _config.DataContext);
-            foreach (var component in _config.CustomComponents)
+            _componentRenderer = new ComponentRenderer(this, Configuration.DataContext);
+            foreach (var component in Configuration.CustomComponents)
                 _componentRenderer.RegisterComponent(component.Key, component.Value);
-            _staticRowRenderer = new StaticRowRenderer(_config, _componentRenderer, Options);
-            Console.BackgroundColor = _config.LogHistoryContainer.BackgroundColor ?? _config.ColorPalette.Get(_config.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
+            _staticRowRenderer = new StaticRowRenderer(Configuration, _componentRenderer, Options);
+            Console.BackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
             Console.Clear();
         }
 
@@ -111,6 +126,9 @@ namespace AnyConsole
         /// </summary>
         public void Close()
         {
+            // invoke the quit handler
+            Configuration.QuitHandler?.Invoke(this);
+
             DrawShutdown();
             if (!_isDisposed)
                 _isRunning?.Set();
@@ -160,7 +178,7 @@ namespace AnyConsole
             var screenHeaderBuilder = new StringBuilder();
             var displayHistory = new List<ConsoleLogEntry>();
             _fullLogHistory = new List<ConsoleLogEntry>();
-            while (!_isRunning.WaitOne(_config.RedrawTimeSpan))
+            while (!_isRunning.WaitOne(Configuration.RedrawTimeSpan))
             {
                 _historyLock.Wait();
                 try
@@ -225,7 +243,7 @@ namespace AnyConsole
             foreach (var pendingLine in pendingLines)
             {
                 var line = pendingLine;
-                var prepend = _config.Prepend;
+                var prepend = Configuration.Prepend;
                 if (!string.IsNullOrEmpty(line) && line.IndexOf(ConsoleLogEntry.DisableProcessingCode) >= 0)
                 {
                     ToggleDisableProcessing();
@@ -242,9 +260,9 @@ namespace AnyConsole
             _bufferingComplete.Set();
 
             // remove older items not shown to the screen as it's not needed anymore
-            var linesToRemove = Math.Abs(_config.MaxHistoryLines - logHistory.Count);
+            var linesToRemove = Math.Abs(Configuration.MaxHistoryLines - logHistory.Count);
 
-            if (logHistory.Count > _config.MaxHistoryLines && logHistory.Count >= linesToRemove)
+            if (logHistory.Count > Configuration.MaxHistoryLines && logHistory.Count >= linesToRemove)
                 logHistory.RemoveRange(0, linesToRemove);
             screenLogBuilder.Clear();
 
@@ -263,9 +281,9 @@ namespace AnyConsole
             Console.SetCursorPosition(0, 0);
 
             // write the static row headers
-            if (_config.StaticRows?.Any() == true)
+            if (Configuration.StaticRows?.Any() == true)
             {
-                foreach (var staticRow in _config.StaticRows)
+                foreach (var staticRow in Configuration.StaticRows)
                 {
                     infoBuilder.Clear();
                     if (_staticRowContentBuilder.ContainsKey(staticRow.Name))
@@ -288,8 +306,8 @@ namespace AnyConsole
             if (logHasUpdates)
             {
                 // restore cursor
-                var xpos = GetXPosition(_config.LogHistoryContainer, 0);
-                var ypos = GetYPosition(_config.LogHistoryContainer, 0);
+                var xpos = GetXPosition(Configuration.LogHistoryContainer, 0);
+                var ypos = GetYPosition(Configuration.LogHistoryContainer, 0);
                 // write the screen log buffer
                 Console.SetCursorPosition(xpos, ypos);
                 var i = 0;
@@ -298,7 +316,7 @@ namespace AnyConsole
                 var rowPrefix = string.Empty;
                 var hideClassNamePrefix = Options.RenderOptions.HasFlag(RenderOptions.HideClassNamePrefix);
                 var hideLogRowPrefix = Options.RenderOptions.HasFlag(RenderOptions.HideLogRowPrefix);
-                var logBackgroundColor = _config.LogHistoryContainer.BackgroundColor ?? _config.ColorPalette.Get(_config.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
+                var logBackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
                 ColorTracker.SetBackColor(logBackgroundColor);
                 _disableLogProcessing = false;
                 foreach (var logLine in log)
@@ -306,11 +324,11 @@ namespace AnyConsole
                     className = string.Empty;
                     rowPrefix = string.Empty;
                     // fade the long lines away
-                    var logForegroundColor = _config.LogHistoryContainer.ForegroundColor
-                        ?? _config.ColorPalette.Get(_config.LogHistoryContainer.ForegroundColorPalette)
+                    var logForegroundColor = Configuration.LogHistoryContainer.ForegroundColor
+                        ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.ForegroundColorPalette)
                         ?? Style.Foreground;
-                    var classNameForegroundColor = _config.LogHistoryContainer.PrependColor
-                        ?? _config.ColorPalette.Get(_config.LogHistoryContainer.PrependColorPalette)
+                    var classNameForegroundColor = Configuration.LogHistoryContainer.PrependColor
+                        ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.PrependColorPalette)
                         ?? Style.ClassName;
                     if (logLine.OriginalLine.Contains("|WARN|"))
                         logForegroundColor = Style.WarningText;
@@ -357,8 +375,8 @@ namespace AnyConsole
                 RenderHelpWindow(stdout);
             }
 
-            if (_config.WindowFrame.Size > 0)
-                WindowFrameRenderer.Render(_config.WindowFrame, stdout);
+            if (Configuration.WindowFrame.Size > 0)
+                WindowFrameRenderer.Render(Configuration.WindowFrame, stdout);
 
             _frameDrawnComplete.Set();
         }
@@ -371,17 +389,17 @@ namespace AnyConsole
             var cursorTop = Console.CursorTop;
             var originalForeground = Console.ForegroundColor;
             var originalBackground = Console.BackgroundColor;
-            var longestEntry = _config.HelpScreen.HelpEntries.OrderByDescending(x => x.Key.Length + x.Description.Length).FirstOrDefault();
+            var longestEntry = Configuration.HelpScreen.HelpEntries.OrderByDescending(x => x.Key.Length + x.Description.Length).FirstOrDefault();
             var helpWidth = longestEntry.Key.Length + longestEntry.Description.Length + 4;
-            var helpHeight = _config.HelpScreen.HelpEntries.Count;
+            var helpHeight = Configuration.HelpScreen.HelpEntries.Count;
 
             var helpStartX = width / 2 - helpWidth / 2;
             var helpStartY = height / 2 - helpHeight / 2;
             var i = 0;
             Console.SetCursorPosition(helpStartX, helpStartY);
 
-            var foreColor = _config.HelpScreen.ForegroundColor ?? _config.ColorPalette.Get(_config.HelpScreen.ForegroundColorPalette) ?? Style.Foreground;
-            var backColor = _config.HelpScreen.BackgroundColor ?? _config.ColorPalette.Get(_config.HelpScreen.BackgroundColorPalette) ?? Style.Background;
+            var foreColor = Configuration.HelpScreen.ForegroundColor ?? Configuration.ColorPalette.Get(Configuration.HelpScreen.ForegroundColorPalette) ?? Style.Foreground;
+            var backColor = Configuration.HelpScreen.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.HelpScreen.BackgroundColorPalette) ?? Style.Background;
             var shadowColor = System.Drawing.Color.FromArgb(backColor.A, (int)Math.Max(backColor.R * 0.5, 0), (int)Math.Max(backColor.G * 0.5, 0), (int)Math.Max(backColor.B * 0.5, 0));
             // if we don't have space for the shadow, just draw the background color
             if (ColorTracker.Count >= ColorPalette.MaxColors)
@@ -391,7 +409,7 @@ namespace AnyConsole
             stdout.Write(new string('▄', helpWidth + 2)); // draw a smaller top margin
             ColorTracker.SetForeColor(foreColor);
             i++;
-            foreach (var entry in _config.HelpScreen.HelpEntries)
+            foreach (var entry in Configuration.HelpScreen.HelpEntries)
             {
                 ColorTracker.SetBackColor(backColor);
                 Console.SetCursorPosition(helpStartX, helpStartY + i);
@@ -399,7 +417,7 @@ namespace AnyConsole
                 var spaces = helpWidth - content.Length;
                 stdout.Write($"  {content}");
                 stdout.Write(new string(' ', spaces));
-                if (_config.HelpScreen.EnableDropShadow)
+                if (Configuration.HelpScreen.EnableDropShadow)
                 {
                     // draw shadow
                     ColorTracker.SetBackColor(shadowColor);
@@ -410,7 +428,7 @@ namespace AnyConsole
             Console.SetCursorPosition(helpStartX, helpStartY + i);
             ColorTracker.SetBackColor(backColor);
             stdout.Write(new string(' ', helpWidth + 2));
-            if (_config.HelpScreen.EnableDropShadow)
+            if (Configuration.HelpScreen.EnableDropShadow)
             {
                 // draw shadow
                 ColorTracker.SetForeColor(shadowColor);
@@ -491,12 +509,12 @@ namespace AnyConsole
 
         private void SetSearch(bool isSearchEnabled)
         {
-            _config.DataContext.SetData<bool>("IsSearchEnabled", isSearchEnabled);
+            Configuration.DataContext.SetData<bool>("IsSearchEnabled", isSearchEnabled);
         }
 
         private void SetSearchString(string str)
         {
-            _config.DataContext.SetData<string>("SearchString", str);
+            Configuration.DataContext.SetData<string>("SearchString", str);
         }
 
         private void AddSearchString(char c)
@@ -522,7 +540,7 @@ namespace AnyConsole
                 if (index >= 0)
                     matches.Add(i, _fullLogHistory[i]);
             }
-            _config.DataContext.SetData<int>("SearchMatches", matches.Count);
+            Configuration.DataContext.SetData<int>("SearchMatches", matches.Count);
             return matches;
         }
 
@@ -547,7 +565,7 @@ namespace AnyConsole
                 if (_fullLogHistory.Count - historyLineNumber - LogDisplayHeight >= 0)
                     _bufferYCursor = _fullLogHistory.Count - historyLineNumber - LogDisplayHeight;
             }
-            _config.DataContext.SetData<int>("SearchIndex", _searchLineIndex);
+            Configuration.DataContext.SetData<int>("SearchIndex", _searchLineIndex);
         }
 
         private void FindPrevious()
@@ -571,7 +589,7 @@ namespace AnyConsole
                 if (_fullLogHistory.Count - historyLineNumber - LogDisplayHeight >= 0)
                     _bufferYCursor = _fullLogHistory.Count - historyLineNumber - LogDisplayHeight;
             }
-            _config.DataContext.SetData<int>("SearchIndex", _searchLineIndex);
+            Configuration.DataContext.SetData<int>("SearchIndex", _searchLineIndex);
         }
 
         private void DrawShutdown()

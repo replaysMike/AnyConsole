@@ -55,7 +55,7 @@ namespace AnyConsole
                                                     break;
                                                 case ConsoleKey.Home:
                                                     // scroll to start
-                                                    _bufferYCursor = _config.MaxHistoryLines;
+                                                    _bufferYCursor = Configuration.MaxHistoryLines;
                                                     _hasLogUpdates = true;
                                                     break;
                                                 case ConsoleKey.Escape:
