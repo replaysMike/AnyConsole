@@ -9,7 +9,7 @@ A CSharp library that gives you better console handling for that classic ASCII l
 
 ## Description
 
-AnyConsole was designed for server service windows, utility tooling and log output windows. It's very handy if you need static header/footers on your consoles while maintaining scrollable areas, adding visual components or more advanced input management such as mouse control. It integrates very well with TopShelf for services.
+AnyConsole was designed for server service consoles, utility tooling and log output consoles. It's very handy if you need static header/footers on your consoles while maintaining scrollable areas for logging, adding visual components or more advanced input management such as mouse control. It integrates very well with [TopShelf](https://github.com/Topshelf/Topshelf) for services, Kestrel web servers and custom console applications. AnyConsole works with both .Net Core and .Net Framework.
 
 ## Installation
 Install AnyConsole from the Package Manager Console:
@@ -50,6 +50,13 @@ console.WriteRow("Header", "Test Console", ColumnLocation.Left, Color.Yellow); /
 console.WriteRow("Header", Component.Time, ColumnLocation.Right); // show the time on the right
 console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Color.FromArgb(60, 60, 60));
 console.Start();
+
+// any stdout output will be logged to the logging history container area
+Console.WriteLine("Some test output");
+Console.WriteLine("More test output");
+// you can also use the console instance
+console.WriteLine("Some additional output");
+
 console.WaitForClose();
 ```
 
