@@ -59,7 +59,7 @@ namespace AnyConsole.Runner
             // you can use either the console instance, or the regular Console to perform writes
             console.WriteAscii("FIRST LINE");
             // here we will use the instance
-            console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+            /*console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
             console.WriteLine("Pellentesque hendrerit dui sit amet ultricies iaculis.");
             console.WriteLine("Nunc et elit non nibh hendrerit tristique.");
             console.WriteLine("Proin vehicula enim et bibendum scelerisque.");
@@ -407,7 +407,7 @@ namespace AnyConsole.Runner
             console.WriteLine("Vestibulum sollicitudin ipsum vel neque vestibulum lacinia.");
             console.WriteLine("Cras sed urna venenatis, sollicitudin est sit amet, fermentum nibh.");
 
-            console.WriteAscii("LAST LINE");
+            console.WriteAscii("LAST LINE");*/
             console.WaitForClose();
         }
 

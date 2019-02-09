@@ -29,6 +29,8 @@
             if (extendedConsole != null)
             {
                 var currentLogLine = extendedConsole._bufferYCursor;
+                if (currentLogLine < 0)
+                    currentLogLine = 0;
                 if (_currentLogLine != currentLogLine)
                 {
                     _currentLogLine = currentLogLine;

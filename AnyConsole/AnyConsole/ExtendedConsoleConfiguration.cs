@@ -30,6 +30,7 @@ namespace AnyConsole
             LogHistoryContainer = new LogHistoryContainer(RowLocation.Top, 0);
             WindowFrame = WindowFrame.None;
             RedrawTimeSpan = TimeSpan.FromMilliseconds(100);
+            DataContext = new ConsoleDataContext();
         }
 
         /// <summary>

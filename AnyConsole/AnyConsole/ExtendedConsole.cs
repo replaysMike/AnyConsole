@@ -222,10 +222,10 @@ namespace AnyConsole
 
         private List<ConsoleLogEntry> TrimBufferForDisplay(List<ConsoleLogEntry> logHistory)
         {
-            if (_bufferYCursor < 0)
-                _bufferYCursor = 0;
             if (_bufferYCursor > logHistory.Count - LogDisplayHeight)
                 _bufferYCursor = logHistory.Count - LogDisplayHeight;
+            if (_bufferYCursor < 0)
+                _bufferYCursor = 0;
             var skipAmount = logHistory.Count - LogDisplayHeight - _bufferYCursor;
             return logHistory.Skip(skipAmount).Take(LogDisplayHeight).ToList();
         }
