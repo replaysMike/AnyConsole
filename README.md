@@ -53,11 +53,94 @@ console.WaitForClose();
 - Text alignment
 - Keyboard/mouse event handling (windows only)
 - Overrides stdout for static display of scrollable content
-- Full color support thanks to Colorful integration!
+- Full color support thanks to [Colorful](http://colorfulconsole.com/) integration!
+- ASCII [Figlet](http://www.figlet.org/) fonts
 - Help screen support
 - Component rendering (built-in rendered components, and custom components of your own)
 - Text output formatting of logs through stdout hijacking
 - Multithreaded
+
+## RGB Color support
+
+Custom color support allows for specifying up to 16 custom colors of your choice. No longer limited to Windows Console color definitions thanks to [Colorful](http://colorfulconsole.com/) integration.
+
+You can specify `System.Drawing.Color` colors when writing data, or create a named color palette. Using a color palette is a nicer option as you can define styles and guarantee you won't go over your 16 color maximum. If you exceed 16 colors when using `System.Drawing.Color` color definitions a `ColorPaletteException` will be thrown.
+
+### Color palette example
+
+```csharp
+// define your custom palette enum
+public enum Style
+{
+    Foreground,
+    Background,
+    HeaderBackground,
+    SubHeaderBackground,
+    SubHeaderForeground,
+    FooterBackground,
+    LogHistoryBackground,
+    Highlight
+}
+
+var console = new ExtendedConsole();
+// create a data context. You can pass this to your own application and use it to pass data to custom components for display.
+var myDataContext = new ConsoleDataContext();
+console.Configure(config =>
+{
+    // use a custom color palette for drawing
+    config.SetColorPalette(new Dictionary<Enum, Color>{
+        { Style.Foreground, Color.White },
+        { Style.Background, Color.Black },
+        { Style.HeaderBackground, Color.DarkRed },
+        { Style.SubHeaderBackground, Color.FromArgb(30, 30, 30) },
+        { Style.SubHeaderForeground, Color.FromArgb(60, 60, 60) },
+        { Style.FooterBackground, Color.DarkBlue },
+        { Style.LogHistoryBackground, Color.FromArgb(100, 100, 100) },
+        { Style.Highlight, Color.Yellow },
+    });
+    config.SetStaticRow("Header", RowLocation.Top, Style.Foreground, Style.HeaderBackground);
+    config.SetLogHistoryContainer(RowLocation.Top, 2, Style.LogHistoryBackground);
+    config.SetDataContext(myDataContext);
+    config.SetUpdateInterval(TimeSpan.FromMilliseconds(100));
+    config.SetMaxHistoryLines(1000);
+    config.SetHelpScreen(Style.Foreground, Style.FooterBackground);
+});
+console.WriteRow("Header", "Test Console", ColumnLocation.Left, Style.Highlight);
+console.WriteRow("Header", Component.DateTimeUtc, ColumnLocation.Right, componentParameter: "MMMM dd yyyy hh:mm tt");
+console.Start();
+
+// write some text to stdout
+Console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+Console.WriteLine("Pellentesque hendrerit dui sit amet ultricies iaculis.");
+
+console.WaitForClose();
+```
+
+## Using [Figlet](http://www.figlet.org/) Fonts
+
+AnyConsole supports using ASCII fonts for rendering. To use the default (built-in) Figlet font:
+
+```csharp
+console.WriteAscii("Moo");
+/*
+   __  ___        
+  /  |/  /__  ___ 
+ / /|_/ / _ \/ _ \
+/_/  /_/\___/\___/
+*/
+```
+
+To use a custom Figlet font:
+```csharp
+var font = FigletFont.Load("chunky.flf");
+console.Write("Moo", font);
+/*
+ _______              
+|   |   |.-----.-----.
+|       ||  _  |  _  |
+|__|_|__||_____|_____|
+*/
+```
 
 ## Built-in key handling
 
