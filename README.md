@@ -19,6 +19,8 @@ PM> Install-Package AnyConsole
 
 ## Visual Examples
 
+See the [wiki](https://github.com/replaysMike/AnyConsole/wiki) for further examples.
+
 Example from Test Runner
 ![AnyConsole](https://github.com/replaysMike/AnyConsole/wiki/screenshots/AnyConsole_example.png)
 Can be configured to contain any number of static rows with components, static text and colors.
@@ -165,7 +167,8 @@ Components allow you to easily add UI elements to your console application, that
 - Disk usage
 - Cpu usage
 - IP Address
-- Log search, buffer information
+- Caps lock, Scroll lock and Num lock status
+- Log search, buffer information, buffer paging
 
 ### Log search component
 
