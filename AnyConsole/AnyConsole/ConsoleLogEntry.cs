@@ -10,7 +10,7 @@ namespace AnyConsole
         /// <summary>
         /// A special encoding character to indicate processing should be disabled
         /// </summary>
-        public const char DisableProcessingCode = '\u0026';
+        public const char DisableProcessingCode = '\u0002';
 
         public bool DisableProcessing { get; set; }
         public string OriginalLine { get; set; } = string.Empty;
