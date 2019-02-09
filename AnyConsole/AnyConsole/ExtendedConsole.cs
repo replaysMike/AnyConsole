@@ -509,7 +509,8 @@ namespace AnyConsole
 
         private void SetSearch(bool isSearchEnabled)
         {
-            Configuration.DataContext.SetData<bool>("IsSearchEnabled", isSearchEnabled);
+            _isSearchEnabled = isSearchEnabled;
+            Configuration.DataContext.SetData<bool>("IsSearchEnabled", _isSearchEnabled);
         }
 
         private void SetSearchString(string str)

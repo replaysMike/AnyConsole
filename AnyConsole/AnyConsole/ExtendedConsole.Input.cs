@@ -51,7 +51,10 @@ namespace AnyConsole
                                             switch (key)
                                             {
                                                 case ConsoleKey.H:
-                                                    ToggleHelp();
+                                                    if (!_isSearchEnabled)
+                                                    {
+                                                        ToggleHelp();
+                                                    }
                                                     break;
                                                 case ConsoleKey.Home:
                                                     // scroll to start
@@ -90,9 +93,12 @@ namespace AnyConsole
                                                     break;
                                                 case ConsoleKey.Q:
                                                     // quit
-                                                    System.Diagnostics.Debug.WriteLine("Quitting....");
-                                                    Close();
-                                                    Dispose();
+                                                    if (!_isSearchEnabled)
+                                                    {
+                                                        System.Diagnostics.Debug.WriteLine("Quitting....");
+                                                        Close();
+                                                        Dispose();
+                                                    }
                                                     break;
                                             }
                                         }

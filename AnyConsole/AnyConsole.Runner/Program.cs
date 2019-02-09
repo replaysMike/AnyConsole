@@ -51,6 +51,7 @@ namespace AnyConsole.Runner
             console.WriteRow("SubHeader", "C: (Free) ", Component.DiskFree, ColumnLocation.Right, componentParameter: @"C:\");
             console.WriteRow("Footer", "C: (Used) ", Component.DiskUsed, ColumnLocation.Left, componentParameter: @"C:\");
             console.WriteRow("Footer", "IP: ", Component.IP, ColumnLocation.Left, componentParameter: 2);
+            console.WriteRow("Footer", Component.LogSearch, ColumnLocation.Left);
             console.WriteRow("Footer", Component.TotalLinesBuffered, ColumnLocation.Right);
             console.WriteRow("Footer", Component.CurrentBufferLine, ColumnLocation.Right);
             console.Start();
