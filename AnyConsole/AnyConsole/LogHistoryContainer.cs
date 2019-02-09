@@ -7,8 +7,10 @@ namespace AnyConsole
     {
         public RowLocation Location { get; set; }
         public int Index { get; set; }
+        public Color? PrependColor { get; set; }
         public Color? ForegroundColor { get; set; }
         public Color? BackgroundColor { get; set; }
+        public Enum PrependColorPalette { get; set; }
         public Enum ForegroundColorPalette { get; set; }
         public Enum BackgroundColorPalette { get; set; }
 

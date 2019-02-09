@@ -194,10 +194,38 @@ namespace AnyConsole
         /// </summary>
         /// <param name="location"></param>
         /// <param name="index"></param>
+        public void SetLogHistoryContainer(RowLocation location, int index, Color prependColor, Color foregroundColor, Color backgroundColor)
+        {
+            LogHistoryContainer.Location = location;
+            LogHistoryContainer.Index = index;
+            LogHistoryContainer.PrependColor = prependColor;
+            LogHistoryContainer.ForegroundColor = foregroundColor;
+            LogHistoryContainer.BackgroundColor = backgroundColor;
+        }
+
+        /// <summary>
+        /// Set the location of where screen output will be buffered to
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="index"></param>
         public void SetLogHistoryContainer(RowLocation location, int index, Enum foregroundColor, Enum backgroundColor)
         {
             LogHistoryContainer.Location = location;
             LogHistoryContainer.Index = index;
+            LogHistoryContainer.ForegroundColorPalette = foregroundColor;
+            LogHistoryContainer.BackgroundColorPalette = backgroundColor;
+        }
+
+        /// <summary>
+        /// Set the location of where screen output will be buffered to
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="index"></param>
+        public void SetLogHistoryContainer(RowLocation location, int index, Enum prependColor, Enum foregroundColor, Enum backgroundColor)
+        {
+            LogHistoryContainer.Location = location;
+            LogHistoryContainer.Index = index;
+            LogHistoryContainer.PrependColorPalette = prependColor;
             LogHistoryContainer.ForegroundColorPalette = foregroundColor;
             LogHistoryContainer.BackgroundColorPalette = backgroundColor;
         }

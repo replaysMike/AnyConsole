@@ -8,6 +8,8 @@
         SubHeaderBackground,
         SubHeaderForeground,
         FooterBackground,
+        LogHistoryPrependForeground,
+        LogHistoryForeground,
         LogHistoryBackground,
         Highlight
     }

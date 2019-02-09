@@ -309,7 +309,9 @@ namespace AnyConsole
                     var logForegroundColor = _config.LogHistoryContainer.ForegroundColor
                         ?? _config.ColorPalette.Get(_config.LogHistoryContainer.ForegroundColorPalette)
                         ?? Style.Foreground;
-                    var classNameForegroundColor = Style.ClassName;
+                    var classNameForegroundColor = _config.LogHistoryContainer.PrependColor
+                        ?? _config.ColorPalette.Get(_config.LogHistoryContainer.PrependColorPalette)
+                        ?? Style.ClassName;
                     if (logLine.OriginalLine.Contains("|WARN|"))
                         logForegroundColor = Style.WarningText;
                     if (logLine.OriginalLine.Contains("|ERROR|"))

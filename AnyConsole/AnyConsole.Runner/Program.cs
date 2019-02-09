@@ -20,13 +20,15 @@ namespace AnyConsole.Runner
                     { Style.SubHeaderBackground, Color.FromArgb(30, 30, 30) },
                     { Style.SubHeaderForeground, Color.FromArgb(60, 60, 60) },
                     { Style.FooterBackground, Color.DarkBlue },
-                    { Style.LogHistoryBackground, Color.FromArgb(100, 100, 100) },
+                    { Style.LogHistoryPrependForeground, Color.FromArgb(0, 200, 0) },
+                    { Style.LogHistoryForeground, Color.FromArgb(100, 100, 100) },
+                    { Style.LogHistoryBackground, Color.FromArgb(20, 20, 20) },
                     { Style.Highlight, Color.Yellow },
                 });
                 config.SetStaticRow("Header", RowLocation.Top, Style.Foreground, Style.HeaderBackground);
                 config.SetStaticRow("SubHeader", RowLocation.Top, 1, Style.Foreground, Style.SubHeaderBackground);
                 config.SetStaticRow("Footer", RowLocation.Bottom, Style.Foreground, Style.FooterBackground);
-                config.SetLogHistoryContainer(RowLocation.Top, 2, Style.LogHistoryBackground);
+                config.SetLogHistoryContainer(RowLocation.Top, 2, Style.LogHistoryPrependForeground, Style.LogHistoryForeground, Style.LogHistoryBackground);
                 config.RegisterComponent<RandomNumberComponent>("TestComponent");
                 config.SetDataContext(context);
                 config.SetUpdateInterval(TimeSpan.FromMilliseconds(100));
@@ -50,9 +52,8 @@ namespace AnyConsole.Runner
             console.Start();
 
             // you can use either the console instance, or the regular Console to perform writes
-            console.WriteAscii("FIRST");
+            console.WriteAscii("FIRST LINE");
             // here we will use the instance
-            console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
             console.WriteLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
             console.WriteLine("Pellentesque hendrerit dui sit amet ultricies iaculis.");
             console.WriteLine("Nunc et elit non nibh hendrerit tristique.");
@@ -401,7 +402,7 @@ namespace AnyConsole.Runner
             console.WriteLine("Vestibulum sollicitudin ipsum vel neque vestibulum lacinia.");
             console.WriteLine("Cras sed urna venenatis, sollicitudin est sit amet, fermentum nibh.");
 
-            console.WriteAscii("LAST");
+            console.WriteAscii("LAST LINE");
             console.WaitForClose();
         }
 
