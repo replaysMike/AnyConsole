@@ -28,7 +28,8 @@ namespace AnyConsole.InternalComponents
             base.Tick(tickCount);
 
             var extendedConsole = _consoleDataContext.GetData<ExtendedConsole>("ExtendedConsole");
-            if (extendedConsole != null)
+            if (extendedConsole != null && extendedConsole.Configuration != null 
+                && extendedConsole.Configuration.LogHistoryContainer != null && extendedConsole._fullLogHistory != null)
             {
                 var itemsPerPage = (Console.WindowHeight - extendedConsole.Configuration.LogHistoryContainer.Index);
                 var totalLogPages = extendedConsole._fullLogHistory.Count / itemsPerPage;
