@@ -45,6 +45,7 @@ namespace AnyConsole.Runner
             console.OnKeyPress += Console_OnKeyPress;
             console.WriteRow("Header", "Test Console", ColumnLocation.Left, Style.Highlight);
             console.WriteRow("Header", Component.DateTimeUtc, ColumnLocation.Right, componentParameter: "MMMM dd yyyy hh:mm tt");
+            console.WriteRow("Header", "Version: ", Component.Version, ColumnLocation.Right, componentParameter: "Major.Minor.Revision.Build");
             console.WriteRow("SubHeader", "This is a test application console", ColumnLocation.Left, Style.SubHeaderForeground);
             console.WriteRow("SubHeader", Component.Custom, "TestComponent", ColumnLocation.Right);
             console.WriteRow("SubHeader", "Mem Used: ", Component.MemoryUsed, ColumnLocation.Right);

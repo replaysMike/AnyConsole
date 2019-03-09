@@ -63,6 +63,7 @@ namespace AnyConsole
             _builtInComponents.Add(Component.NumLock, new NumLockComponent(_dataContext));
             _builtInComponents.Add(Component.ScrollLock, new ScrollLockComponent(_dataContext));
             _builtInComponents.Add(Component.LogSearch, new LogSearchComponent(_dataContext));
+            _builtInComponents.Add(Component.Version, new VersionComponent(_dataContext));
             foreach (var builtInComponent in _builtInComponents)
                 builtInComponent.Value.Setup(_dataContext, builtInComponent.GetType().Name, _console);
         }

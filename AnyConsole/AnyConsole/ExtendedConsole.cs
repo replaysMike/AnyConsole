@@ -193,6 +193,9 @@ namespace AnyConsole
                 _frameDrawnComplete.Reset();
                 DrawStaticHeader(screenHeaderBuilder, displayHistory, _hasLogUpdates);
             }
+            Console.SetCursorPosition(0, Console.BufferHeight - 1);
+            Console.CursorVisible = true;
+            Console.ResetColor();
         }
 
         private StringBuilder ConfigureConsole()

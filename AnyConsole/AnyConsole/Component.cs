@@ -28,6 +28,7 @@
         CapsLock,
         ScrollLock,
         NumLock,
+        Version,
         Custom
     }
 }
