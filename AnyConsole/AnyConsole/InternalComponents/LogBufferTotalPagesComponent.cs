@@ -35,7 +35,7 @@ namespace AnyConsole.InternalComponents
                 && extendedConsole._fullLogHistory != null)
             {
                 var itemsPerPage = (Console.WindowHeight - extendedConsole.Configuration.LogHistoryContainer.Index);
-                var totalLogPages = extendedConsole._fullLogHistory.Count / itemsPerPage;
+                var totalLogPages = (extendedConsole._fullLogHistory.Count / itemsPerPage) + 1;
 
                 if (_totalLogPages != totalLogPages)
                 {
