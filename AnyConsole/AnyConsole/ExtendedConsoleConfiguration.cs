@@ -10,6 +10,7 @@ namespace AnyConsole
     /// </summary>
     public class ExtendedConsoleConfiguration
     {
+        private const int DefaultMaxHistoryLines = 1000;
         internal LogHistoryContainer LogHistoryContainer { get; }
         internal ICollection<StaticRowConfig> StaticRows { get; }
         internal IDictionary<string, Type> CustomComponents { get; }
@@ -25,12 +26,15 @@ namespace AnyConsole
 
         public ExtendedConsoleConfiguration()
         {
+            MaxHistoryLines = DefaultMaxHistoryLines;
             StaticRows = new List<StaticRowConfig>();
             CustomComponents = new Dictionary<string, Type>();
             LogHistoryContainer = new LogHistoryContainer(RowLocation.Top, 0);
             WindowFrame = WindowFrame.None;
             RedrawTimeSpan = TimeSpan.FromMilliseconds(100);
             DataContext = new ConsoleDataContext();
+            HelpScreen = new DefaultHelpScreen();
+            ColorPalette = new ColorPalette();
         }
 
         /// <summary>
