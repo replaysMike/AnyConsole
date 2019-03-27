@@ -48,13 +48,16 @@ namespace AnyConsole.InternalComponents
         public override void Tick(ulong tickCount)
         {
             base.Tick(tickCount);
-            if (_drive != null)
+            if (tickCount % 60 == 0)
             {
-                var newValue = FormatSize(_drive.TotalSize - _drive.TotalFreeSpace);
-                if (!newValue.Equals(_value))
+                if (_drive != null)
                 {
-                    _value = newValue;
-                    HasUpdates = true;
+                    var newValue = FormatSize(_drive.TotalSize - _drive.TotalFreeSpace);
+                    if (!newValue.Equals(_value))
+                    {
+                        _value = newValue;
+                        HasUpdates = true;
+                    }
                 }
             }
         }

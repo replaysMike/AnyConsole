@@ -9,7 +9,6 @@ namespace AnyConsole.InternalComponents
         private string _value;
         private ICollection<IPAddress> _ipAddressList;
         private int? _chosenIndex;
-        private bool _renderCalled = false;
 
         public IPAddressComponent(ConsoleDataContext consoleDataContext) : base(consoleDataContext)
         {
@@ -43,14 +42,14 @@ namespace AnyConsole.InternalComponents
             finally
             {
                 HasUpdates = false;
-                _renderCalled = true;
             }
         }
 
         public override void Tick(ulong tickCount)
         {
             base.Tick(tickCount);
-            if (_renderCalled || tickCount % 20 == 0)
+            // UpdateIP is an expensive call so only do it periodically
+            if (tickCount % 120 == 0)
             {
                 UpdateIP();
                 string newValue;

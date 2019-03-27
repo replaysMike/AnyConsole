@@ -21,11 +21,15 @@
         public override void Tick(ulong tickCount)
         {
             base.Tick(tickCount);
-            var newValue = FormatSize(CurrentProcess.WorkingSet64);
-            if (!newValue.Equals(_value))
+            // CurrentProcess.WorkingSet64 is an expensive call so we will call it less frequently
+            if (tickCount % 60 == 0)
             {
-                _value = newValue;
-                HasUpdates = false;
+                var newValue = FormatSize(CurrentProcess.WorkingSet64);
+                if (!newValue.Equals(_value))
+                {
+                    _value = newValue;
+                    HasUpdates = false;
+                }
             }
         }
     }

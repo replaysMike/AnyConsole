@@ -133,8 +133,8 @@ namespace AnyConsole
                     }
                 }
             }
-            Console.ForegroundColor = originalForeColor;
-            Console.BackgroundColor = originalBackColor;
+            ColorTracker.SetForeColor(originalForeColor);
+            ColorTracker.SetBackColor(originalBackColor);
 
             // return the rendered string
             return builder.ToString();

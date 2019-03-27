@@ -25,13 +25,15 @@ namespace AnyConsole
         public static void SetForeColor(System.Drawing.Color color)
         {
             AddColor(color);
-            Console.ForegroundColor = color;
+            if (Console.ForegroundColor != color)
+                Console.ForegroundColor = color;
         }
 
         public static void SetBackColor(System.Drawing.Color color)
         {
             AddColor(color);
-            Console.BackgroundColor = color;
+            if (Console.BackgroundColor != color)
+                Console.BackgroundColor = color;
         }
 
         public static void AddColor(System.Drawing.Color color)

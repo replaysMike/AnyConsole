@@ -21,11 +21,14 @@
         public override void Tick(ulong tickCount)
         {
             base.Tick(tickCount);
-            var newValue = FormatSize(CurrentProcess.PrivateMemorySize64);
-            if (!newValue.Equals(_value))
+            if (tickCount % 60 == 0)
             {
-                _value = newValue;
-                HasUpdates = true;
+                var newValue = FormatSize(CurrentProcess.PrivateMemorySize64);
+                if (!newValue.Equals(_value))
+                {
+                    _value = newValue;
+                    HasUpdates = true;
+                }
             }
         }
     }

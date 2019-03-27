@@ -23,11 +23,14 @@ namespace AnyConsole.InternalComponents
         public override void Tick(ulong tickCount)
         {
             base.Tick(tickCount);
-            var newValue = $"{CurrentProcess.TotalProcessorTime}";
-            if (!newValue.Equals(_value))
+            if (tickCount % 60 == 0)
             {
-                _value = newValue;
-                HasUpdates = true;
+                var newValue = $"{CurrentProcess.TotalProcessorTime}";
+                if (!newValue.Equals(_value))
+                {
+                    _value = newValue;
+                    HasUpdates = true;
+                }
             }
         }
     }

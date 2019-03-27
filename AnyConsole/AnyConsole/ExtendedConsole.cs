@@ -190,7 +190,8 @@ namespace AnyConsole
                     _historyLock.Release();
                 }
                 _frameDrawnComplete.Reset();
-                DrawStaticHeader(screenHeaderBuilder, displayHistory, _hasLogUpdates);
+                DrawScreen(screenHeaderBuilder, displayHistory, _hasLogUpdates);
+                _hasLogUpdates = false;
             }
             Console.SetCursorPosition(0, Console.BufferHeight - 1);
             Console.CursorVisible = true;
@@ -271,7 +272,7 @@ namespace AnyConsole
             return logHistory;
         }
 
-        private void DrawStaticHeader(StringBuilder infoBuilder, ICollection<ConsoleLogEntry> log, bool logHasUpdates)
+        private void DrawScreen(StringBuilder infoBuilder, ICollection<ConsoleLogEntry> log, bool logHasUpdates)
         {
             ColorTracker.Clear();
             // we will write any screen contents to stderr, as stdout is redirected internally
