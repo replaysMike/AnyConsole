@@ -3,13 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnyConsole", "AnyConsole\AnyConsole.csproj", "{33871922-4766-4E9A-921F-CEAAA2C71A7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnyConsole", "AnyConsole\AnyConsole.csproj", "{33871922-4766-4E9A-921F-CEAAA2C71A7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnyConsole.Tests", "AnyConsole.Tests\AnyConsole.Tests.csproj", "{56E865B3-7F6F-4A23-BE95-CBB09BCE0E63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnyConsole.Tests", "AnyConsole.Tests\AnyConsole.Tests.csproj", "{56E865B3-7F6F-4A23-BE95-CBB09BCE0E63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnyConsole.Runner", "AnyConsole.Runner\AnyConsole.Runner.csproj", "{49B988C1-CC55-4C83-A47E-C1A35E56DCE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnyConsole.Runner", "AnyConsole.Runner\AnyConsole.Runner.csproj", "{49B988C1-CC55-4C83-A47E-C1A35E56DCE5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3DC0230E-B12C-4360-8A3F-3903A79395B3}"
+	ProjectSection(SolutionItems) = preProject
+		Performance1.psess = Performance1.psess
+	EndProjectSection
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
