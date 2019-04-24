@@ -21,6 +21,8 @@ namespace AnyConsole
             if (wasQuickEditModeEnabled)
                 DisableQuickEditMode(hWnd);
 
+            EnableConsoleInputs(hWnd);
+
             // read initial key state
             CapsLockEnabled = GetKeyState(VirtualKeyStates.VK_CAPITAL) == 1;
             NumLockEnabled = GetKeyState(VirtualKeyStates.VK_NUMLOCK) == 1;
@@ -78,6 +80,26 @@ namespace AnyConsole
                                                     _searchLineIndex = -1;
                                                     _hasLogUpdates = true;
                                                     SetSearch(false);
+                                                    break;
+                                                case ConsoleKey.PageUp:
+                                                    if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
+                                                    {
+                                                        _hasLogUpdates = true;
+                                                        if (_bufferYCursor < _fullLogHistory.Count - LogDisplayHeight)
+                                                            _bufferYCursor += LogDisplayHeight;
+                                                        else
+                                                            _bufferYCursor = _fullLogHistory.Count;
+                                                    }
+                                                    break;
+                                                case ConsoleKey.PageDown:
+                                                    if (Options.InputOptions == InputOptions.UseBuiltInKeyOperations)
+                                                    {
+                                                        _hasLogUpdates = true;
+                                                        if (_bufferYCursor - LogDisplayHeight > 0)
+                                                            _bufferYCursor -= LogDisplayHeight;
+                                                        else
+                                                            _bufferYCursor = 0;
+                                                    }
                                                     break;
                                                 case ConsoleKey.Enter:
                                                     if (_isSearchEnabled)

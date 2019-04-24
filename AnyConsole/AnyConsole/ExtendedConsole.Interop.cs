@@ -19,6 +19,8 @@ namespace AnyConsole
         const uint MOUSE_WHEELUP = 0xFF880000;
         const uint MOUSE_WHEELDOWN = 0x00780000;
         const uint ENABLE_QUICK_EDIT = 0x0040;
+        const uint ENABLE_WINDOW_INPUT = 0x0008;
+        const uint ENABLE_MOUSE_INPUT = 0x0010;
         const uint KEY_PRESSED = 0x8000;
 
         [DllImport("kernel32.dll")]
@@ -57,6 +59,17 @@ namespace AnyConsole
 
         [DllImport("kernel32.dll")]
         static extern bool SetConsoleMode(IntPtr hConsoleInput, uint dwMode);
+
+        private void EnableConsoleInputs(IntPtr hWnd)
+        {
+            var consoleMode = 0U;
+            if (GetConsoleMode(hWnd, out consoleMode))
+            {
+                consoleMode |= ENABLE_MOUSE_INPUT;
+                consoleMode |= ENABLE_WINDOW_INPUT;
+                SetConsoleMode(hWnd, consoleMode);
+            }
+        }
 
         /// <summary>
         /// True if quick edit mode is enabled
