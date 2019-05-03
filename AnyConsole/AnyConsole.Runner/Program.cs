@@ -12,6 +12,7 @@ namespace AnyConsole.Runner
             var context = new ConsoleDataContext();
             console.Configure(config =>
             {
+                config.SetDataContext(context);
                 // use a custom color palette for drawing
                 config.SetColorPalette(new Dictionary<Enum, Color>{
                     { Style.Foreground, Color.White },
@@ -30,7 +31,6 @@ namespace AnyConsole.Runner
                 config.SetStaticRow("Footer", RowLocation.Bottom, Style.Foreground, Style.FooterBackground);
                 config.SetLogHistoryContainer(RowLocation.Top, 2, Style.LogHistoryPrependForeground, Style.LogHistoryForeground, Style.LogHistoryBackground);
                 config.RegisterComponent<RandomNumberComponent>("TestComponent");
-                config.SetDataContext(context);
                 config.SetUpdateInterval(TimeSpan.FromMilliseconds(100));
                 config.SetMaxHistoryLines(1000);
                 config.SetHelpScreen(Style.Foreground, Style.FooterBackground);

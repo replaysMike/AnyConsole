@@ -20,6 +20,12 @@ namespace AnyConsole
         private Thread _componentUpdateThread;
         private ConsoleDataContext _dataContext;
 
+        public ConsoleDataContext DataContext
+        {
+            get { return _dataContext; }
+            set { _dataContext = value; }
+        }
+
         public ComponentRenderer(IExtendedConsole console, ConsoleDataContext dataContext)
         {
             _console = console;

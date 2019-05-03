@@ -90,8 +90,6 @@ namespace AnyConsole
             var consoleConfiguration = new ExtendedConsoleConfiguration();
             Configuration = consoleConfiguration;
             Configuration.DataContext.SetData<ExtendedConsole>("ExtendedConsole", this);
-            _componentRenderer = new ComponentRenderer(this, Configuration.DataContext);
-            _staticRowRenderer = new StaticRowRenderer(Configuration, _componentRenderer, Options);
         }
 
         /// <summary>
@@ -101,6 +99,9 @@ namespace AnyConsole
         public void Configure(Action<ExtendedConsoleConfiguration> config)
         {
             config.Invoke(Configuration);
+            _componentRenderer = new ComponentRenderer(this, Configuration.DataContext);
+            _staticRowRenderer = new StaticRowRenderer(Configuration, _componentRenderer, Options);
+
             foreach (var component in Configuration.CustomComponents)
                 _componentRenderer.RegisterComponent(component.Key, component.Value);
             Console.BackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
