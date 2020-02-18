@@ -18,6 +18,7 @@ namespace AnyConsole
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
         private StringBuilder _screenLogBuilder = new StringBuilder();
         private IDictionary<string, ICollection<RowContent>> _staticRowContentBuilder = new Dictionary<string, ICollection<RowContent>>();
+        private List<DirectOutputEntry> _directOutputEntries = new List<DirectOutputEntry>();
         private Thread _drawingThread;
         private Thread _inputThread;
         private ManualResetEvent _isRunning;
@@ -104,7 +105,7 @@ namespace AnyConsole
 
             foreach (var component in Configuration.CustomComponents)
                 _componentRenderer.RegisterComponent(component.Key, component.Value);
-            Console.BackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
+            Console.BackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style._background;
             Console.Clear();
         }
 
@@ -309,6 +310,9 @@ namespace AnyConsole
 
             if (logHasUpdates)
             {
+                if (_directOutputEntries.Any())
+                    _directOutputEntries.RemoveAll(x => x.IsDisplayed && x.DirectOutputMode == DirectOutputMode.ClearOnChange);
+
                 // restore cursor
                 var xpos = GetXPosition(Configuration.LogHistoryContainer, 0);
                 var ypos = GetYPosition(Configuration.LogHistoryContainer, 0);
@@ -320,7 +324,7 @@ namespace AnyConsole
                 var rowPrefix = string.Empty;
                 var hideClassNamePrefix = Options.RenderOptions.HasFlag(RenderOptions.HideClassNamePrefix);
                 var hideLogRowPrefix = Options.RenderOptions.HasFlag(RenderOptions.HideLogRowPrefix);
-                var logBackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style.Background;
+                var logBackgroundColor = Configuration.LogHistoryContainer.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.BackgroundColorPalette) ?? Style._background;
                 ColorTracker.SetBackColor(logBackgroundColor);
                 _disableLogProcessing = false;
                 foreach (var logLine in log)
@@ -330,14 +334,14 @@ namespace AnyConsole
                     // fade the long lines away
                     var logForegroundColor = Configuration.LogHistoryContainer.ForegroundColor
                         ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.ForegroundColorPalette)
-                        ?? Style.Foreground;
+                        ?? Style._foreground;
                     var classNameForegroundColor = Configuration.LogHistoryContainer.PrependColor
                         ?? Configuration.ColorPalette.Get(Configuration.LogHistoryContainer.PrependColorPalette)
-                        ?? Style.ClassName;
+                        ?? Style._className;
                     if (logLine.OriginalLine.Contains("|WARN|"))
-                        logForegroundColor = Style.WarningText;
+                        logForegroundColor = Style._warningText;
                     if (logLine.OriginalLine.Contains("|ERROR|"))
-                        logForegroundColor = Style.ErrorText;
+                        logForegroundColor = Style._errorText;
 
                     if (i < linesToFade)
                     {
@@ -366,7 +370,9 @@ namespace AnyConsole
                     }
                     ColorTracker.SetForeColor(logForegroundColor);
                     var truncatedLine = logLine.GetTruncatedLine(Console.BufferWidth, rowPrefix.Length);
-                    var spaces = (Console.WindowWidth - className.Length - rowPrefix.Length - truncatedLine.Length);
+                    // fixes an issue when the buffer width and window width are not the same
+                    var windowSpacing = Console.BufferWidth - Console.WindowWidth;
+                    var spaces = (Console.WindowWidth - className.Length - rowPrefix.Length - truncatedLine.Length) + windowSpacing;
                     if (spaces < 0)
                         spaces = 0;
                     stdout.Write(truncatedLine + new string(' ', spaces));
@@ -379,10 +385,25 @@ namespace AnyConsole
                 RenderHelpWindow(stdout);
             }
 
+            RenderDirectOutput(stdout);
+
             if (Configuration.WindowFrame.Size > 0)
                 WindowFrameRenderer.Render(Configuration.WindowFrame, stdout);
 
             _frameDrawnComplete.Set();
+        }
+
+        private void RenderDirectOutput(TextWriter stdout)
+        {
+            var cursorLeft = Console.CursorLeft;
+            var cursorTop = Console.CursorTop;
+            foreach (var entry in _directOutputEntries)
+            {
+                Console.SetCursorPosition(entry.X, entry.Y);
+                stdout.Write(entry.Text);
+                entry.IsDisplayed = true;
+            }
+            Console.SetCursorPosition(cursorLeft, cursorTop);
         }
 
         private void RenderHelpWindow(TextWriter stdout)
@@ -402,8 +423,8 @@ namespace AnyConsole
             var i = 0;
             Console.SetCursorPosition(helpStartX, helpStartY);
 
-            var foreColor = Configuration.HelpScreen.ForegroundColor ?? Configuration.ColorPalette.Get(Configuration.HelpScreen.ForegroundColorPalette) ?? Style.Foreground;
-            var backColor = Configuration.HelpScreen.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.HelpScreen.BackgroundColorPalette) ?? Style.Background;
+            var foreColor = Configuration.HelpScreen.ForegroundColor ?? Configuration.ColorPalette.Get(Configuration.HelpScreen.ForegroundColorPalette) ?? Style._foreground;
+            var backColor = Configuration.HelpScreen.BackgroundColor ?? Configuration.ColorPalette.Get(Configuration.HelpScreen.BackgroundColorPalette) ?? Style._background;
             var shadowColor = System.Drawing.Color.FromArgb(backColor.A, (int)Math.Max(backColor.R * 0.5, 0), (int)Math.Max(backColor.G * 0.5, 0), (int)Math.Max(backColor.B * 0.5, 0));
             // if we don't have space for the shadow, just draw the background color
             if (ColorTracker.Count >= ColorPalette.MaxColors)

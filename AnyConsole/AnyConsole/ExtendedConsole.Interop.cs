@@ -169,7 +169,7 @@ namespace AnyConsole
 
             public WINDOW_BUFFER_SIZE_RECORD(short x, short y)
             {
-                this.dwSize = new POINT(x, y);
+                dwSize = new POINT(x, y);
             }
         }
 

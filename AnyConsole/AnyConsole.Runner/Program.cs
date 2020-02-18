@@ -413,6 +413,9 @@ namespace AnyConsole.Runner
             console.WriteLine("Cras sed urna venenatis, sollicitudin est sit amet, fermentum nibh.");
 
             console.WriteAscii("LAST LINE");
+
+            console.WriteAt("XXXXXXXXXXX This will overwrite on the screen!", 10, 20, DirectOutputMode.Static);
+            // console.ClearAt(10, 20);
             console.WaitForClose();
         }
 

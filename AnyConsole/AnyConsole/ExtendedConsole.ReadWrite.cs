@@ -73,5 +73,44 @@ namespace AnyConsole
             Console.Write(text);
             Console.Write(ConsoleLogEntry.DisableProcessingCode);
         }
+
+        /// <summary>
+        /// Write directly at a given position of the screen
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        public void WriteAt(string text, int xPos, int yPos)
+        {
+            WriteAt(text, xPos, yPos, DirectOutputMode.ClearOnChange);
+        }
+
+        /// <summary>
+        /// Write directly at a given position of the screen
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <param name="directOutputMode">The mode which indicates when the text should be cleared</param>
+        public void WriteAt(string text, int xPos, int yPos, DirectOutputMode directOutputMode)
+        {
+            var left = Console.CursorLeft;
+            var top = Console.CursorTop;
+            Console.SetCursorPosition(xPos, yPos);
+            _directOutputEntries.Add(new DirectOutputEntry(text, xPos, yPos, directOutputMode));
+            Console.SetCursorPosition(left, top);
+            _hasLogUpdates = true;
+        }
+
+        /// <summary>
+        /// Remove a statically placed text entry
+        /// </summary>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        public void ClearAt(int xPos, int yPos)
+        {
+            _directOutputEntries.RemoveAll(x => x.X == xPos && x.Y == yPos);
+            _hasLogUpdates = true;
+        }
     }
 }
