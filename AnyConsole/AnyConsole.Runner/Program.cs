@@ -414,7 +414,7 @@ namespace AnyConsole.Runner
 
             console.WriteAscii("LAST LINE");
 
-            console.WriteAt("XXXXXXXXXXX This will overwrite on the screen!", 10, 20, DirectOutputMode.Static);
+            console.WriteAt("XXXXXXXXXXX This will overwrite on the screen!", 10, 20, DirectOutputMode.Static, Color.Red);
             // console.ClearAt(10, 20);
             console.WaitForClose();
         }

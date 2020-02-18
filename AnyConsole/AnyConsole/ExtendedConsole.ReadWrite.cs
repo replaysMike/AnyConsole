@@ -1,4 +1,5 @@
-﻿using Colorful;
+﻿using System.Drawing;
+using Colorful;
 using Console = Colorful.Console;
 
 namespace AnyConsole
@@ -82,7 +83,7 @@ namespace AnyConsole
         /// <param name="yPos"></param>
         public void WriteAt(string text, int xPos, int yPos)
         {
-            WriteAt(text, xPos, yPos, DirectOutputMode.ClearOnChange);
+            WriteAt(text, xPos, yPos, DirectOutputMode.ClearOnChange, null, null);
         }
 
         /// <summary>
@@ -92,12 +93,12 @@ namespace AnyConsole
         /// <param name="xPos"></param>
         /// <param name="yPos"></param>
         /// <param name="directOutputMode">The mode which indicates when the text should be cleared</param>
-        public void WriteAt(string text, int xPos, int yPos, DirectOutputMode directOutputMode)
+        public void WriteAt(string text, int xPos, int yPos, DirectOutputMode directOutputMode, Color? foregroundColor = null, Color? backgroundColor = null)
         {
             var left = Console.CursorLeft;
             var top = Console.CursorTop;
             Console.SetCursorPosition(xPos, yPos);
-            _directOutputEntries.Add(new DirectOutputEntry(text, xPos, yPos, directOutputMode));
+            _directOutputEntries.Add(new DirectOutputEntry(text, xPos, yPos, directOutputMode, foregroundColor, backgroundColor));
             Console.SetCursorPosition(left, top);
             _hasLogUpdates = true;
         }
@@ -109,7 +110,33 @@ namespace AnyConsole
         /// <param name="yPos"></param>
         public void ClearAt(int xPos, int yPos)
         {
-            _directOutputEntries.RemoveAll(x => x.X == xPos && x.Y == yPos);
+            _historyLock.Wait();
+            try
+            {
+                _directOutputEntries.RemoveAll(x => x.X == xPos && x.Y == yPos);
+            }
+            finally
+            {
+                _historyLock.Release();
+            }
+            _hasLogUpdates = true;
+        }
+
+        /// <summary>
+        /// Clear the console log
+        /// </summary>
+        public void Clear()
+        {
+            _historyLock.Wait();
+            try
+            {
+                _screenLogBuilder.Clear();
+                _fullLogHistory.Clear();
+            }
+            finally
+            {
+                _historyLock.Release();
+            }
             _hasLogUpdates = true;
         }
     }
