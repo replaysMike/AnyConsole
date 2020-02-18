@@ -311,7 +311,17 @@ namespace AnyConsole
             if (logHasUpdates)
             {
                 if (_directOutputEntries.Any())
-                    _directOutputEntries.RemoveAll(x => x.IsDisplayed && x.DirectOutputMode == DirectOutputMode.ClearOnChange);
+                {
+                    _historyLock.Wait();
+                    try
+                    {
+                        _directOutputEntries.RemoveAll(x => x.IsDisplayed && x.DirectOutputMode == DirectOutputMode.ClearOnChange);
+                    }
+                    finally
+                    {
+                        _historyLock.Release();
+                    }
+                }
 
                 // restore cursor
                 var xpos = GetXPosition(Configuration.LogHistoryContainer, 0);
@@ -399,15 +409,23 @@ namespace AnyConsole
             var cursorTop = Console.CursorTop;
             var originalForeground = Console.ForegroundColor;
             var originalBackground = Console.BackgroundColor;
-            foreach (var entry in _directOutputEntries)
+            _historyLock.Wait();
+            try
             {
-                Console.SetCursorPosition(entry.X, entry.Y);
-                if (entry.ForegroundColor.HasValue)
-                    Console.ForegroundColor = entry.ForegroundColor.Value;
-                if (entry.BackgroundColor.HasValue)
-                    Console.BackgroundColor = entry.BackgroundColor.Value;
-                stdout.Write(entry.Text);
-                entry.IsDisplayed = true;
+                foreach (var entry in _directOutputEntries)
+                {
+                    Console.SetCursorPosition(entry.X, entry.Y);
+                    if (entry.ForegroundColor.HasValue)
+                        Console.ForegroundColor = entry.ForegroundColor.Value;
+                    if (entry.BackgroundColor.HasValue)
+                        Console.BackgroundColor = entry.BackgroundColor.Value;
+                    stdout.Write(entry.Text);
+                    entry.IsDisplayed = true;
+                }
+            }
+            finally
+            {
+                _historyLock.Release();
             }
             Console.ForegroundColor = originalForeground;
             Console.BackgroundColor = originalBackground;

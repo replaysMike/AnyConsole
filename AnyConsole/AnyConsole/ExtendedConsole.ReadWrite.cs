@@ -98,7 +98,15 @@ namespace AnyConsole
             var left = Console.CursorLeft;
             var top = Console.CursorTop;
             Console.SetCursorPosition(xPos, yPos);
-            _directOutputEntries.Add(new DirectOutputEntry(text, xPos, yPos, directOutputMode, foregroundColor, backgroundColor));
+            _historyLock.Wait();
+            try
+            {
+                _directOutputEntries.Add(new DirectOutputEntry(text, xPos, yPos, directOutputMode, foregroundColor, backgroundColor));
+            }
+            finally
+            {
+                _historyLock.Release();
+            }
             Console.SetCursorPosition(left, top);
             _hasLogUpdates = true;
         }
