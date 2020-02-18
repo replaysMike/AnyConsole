@@ -130,6 +130,7 @@ namespace AnyConsole
             _historyLock.Wait();
             try
             {
+                _directOutputEntries.Clear();
                 _screenLogBuilder.Clear();
                 _fullLogHistory.Clear();
             }
