@@ -64,7 +64,7 @@ namespace AnyConsole
             _content = content;
         }
 
-        public string Write(TextWriter output)
+        public string Write(TextWriter output, bool forceDraw = false)
         {
             var cursorLeft = Console.CursorLeft;
             var cursorTop = Console.CursorTop;
@@ -81,7 +81,7 @@ namespace AnyConsole
 
             if (_content?.Any() == true)
             {
-                var contentHasUpdates = _renderer.ComponentRenderer.HasUpdates(_content);
+                var contentHasUpdates = _renderer.ComponentRenderer.HasUpdates(_content) || forceDraw;
 
                 if (contentHasUpdates)
                 {

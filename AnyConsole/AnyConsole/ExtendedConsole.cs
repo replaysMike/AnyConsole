@@ -16,9 +16,11 @@ namespace AnyConsole
     {
         private bool _isDisposed;
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
+        private List<ConsoleLogEntry> _displayHistory = new List<ConsoleLogEntry>();
         private StringBuilder _screenLogBuilder = new StringBuilder();
         private IDictionary<string, ICollection<RowContent>> _staticRowContentBuilder = new Dictionary<string, ICollection<RowContent>>();
         private List<DirectOutputEntry> _directOutputEntries = new List<DirectOutputEntry>();
+        private List<DirectOutputEntry> _clearOutputEntries = new List<DirectOutputEntry>();
         private Thread _drawingThread;
         private Thread _inputThread;
         private ManualResetEvent _isRunning;
@@ -26,6 +28,7 @@ namespace AnyConsole
         private ManualResetEvent _frameDrawnComplete;
         private StaticRowRenderer _staticRowRenderer;
         private ComponentRenderer _componentRenderer;
+        private bool _clearRequested;
         private bool _disableLogProcessing = false;
         private bool _hasLogUpdates = false;
         private bool _isSearchEnabled = false;
@@ -163,6 +166,7 @@ namespace AnyConsole
             _isRunning = new ManualResetEvent(false);
             _bufferingComplete = new ManualResetEvent(false);
             _frameDrawnComplete = new ManualResetEvent(false);
+            _clearRequested = false;
             _inputThread = new Thread(new ThreadStart(InputThread));
             //_inputThread.IsBackground = true;
             _inputThread.Start();
@@ -176,8 +180,6 @@ namespace AnyConsole
             // if there is no console available, no need to display anything.
             if (_screenLogBuilder == null)
                 return;
-            var screenHeaderBuilder = new StringBuilder();
-            var displayHistory = new List<ConsoleLogEntry>();
             _fullLogHistory = new List<ConsoleLogEntry>();
             while (!_isRunning.WaitOne(Configuration.RedrawTimeSpan))
             {
@@ -185,14 +187,16 @@ namespace AnyConsole
                 try
                 {
                     _fullLogHistory = ProcessBufferedOutput(_screenLogBuilder, _fullLogHistory);
-                    displayHistory = TrimBufferForDisplay(_fullLogHistory);
+                    _displayHistory = TrimAndCopyBufferForDisplay(_fullLogHistory);
+                    // remove any cleared direct output entries
+                    _directOutputEntries = _directOutputEntries.Where(x => !x.IsCleared).ToList();
                 }
                 finally
                 {
                     _historyLock.Release();
                 }
                 _frameDrawnComplete.Reset();
-                DrawScreen(screenHeaderBuilder, displayHistory, _hasLogUpdates);
+                DrawScreen(_screenHeaderBuilder, _displayHistory, _hasLogUpdates);
                 _hasLogUpdates = false;
             }
             Console.SetCursorPosition(0, Console.BufferHeight - 1);
@@ -225,7 +229,7 @@ namespace AnyConsole
             return consoleOutputStringWriter.GetStringBuilder();
         }
 
-        private List<ConsoleLogEntry> TrimBufferForDisplay(List<ConsoleLogEntry> logHistory)
+        private List<ConsoleLogEntry> TrimAndCopyBufferForDisplay(List<ConsoleLogEntry> logHistory)
         {
             if (_bufferYCursor > logHistory.Count - LogDisplayHeight)
                 _bufferYCursor = logHistory.Count - LogDisplayHeight;
@@ -278,12 +282,22 @@ namespace AnyConsole
         {
             ColorTracker.Clear();
             // we will write any screen contents to stderr, as stdout is redirected internally
+            var forceStaticRowDraw = false;
             var stdout = Console.Error;
             var cursorLeft = Console.CursorLeft;
             var cursorTop = Console.CursorTop;
             var width = Console.WindowWidth;
 
             Console.SetCursorPosition(0, 0);
+
+            if (_clearRequested)
+            {
+                _clearRequested = false;
+                logHasUpdates = true;
+                // force the static headers to redraw
+                forceStaticRowDraw = true;
+                Console.Clear();
+            }
 
             // write the static row headers
             if (Configuration.StaticRows?.Any() == true)
@@ -296,31 +310,32 @@ namespace AnyConsole
                         var content = _staticRowContentBuilder[staticRow.Name];
                         var rowText = _staticRowRenderer
                             .Build(staticRow, content)
-                            .Write(stdout);
+                            .Write(stdout, forceStaticRowDraw);
                     }
                     else
                     {
                         // render a blank row
                         _staticRowRenderer
                             .Build(staticRow)
-                            .Write(stdout);
+                            .Write(stdout, forceStaticRowDraw);
                     }
                 }
             }
 
             if (logHasUpdates)
             {
-                if (_directOutputEntries.Any())
+                // clear any direct output that needs to be removed
+                ClearDirectOutput(stdout);
+
+                // draw any direct output buffers added
+                _historyLock.Wait();
+                try
                 {
-                    _historyLock.Wait();
-                    try
-                    {
-                        _directOutputEntries.RemoveAll(x => x.IsDisplayed && x.DirectOutputMode == DirectOutputMode.ClearOnChange);
-                    }
-                    finally
-                    {
-                        _historyLock.Release();
-                    }
+                    _directOutputEntries.RemoveAll(x => x.IsDisplayed && x.DirectOutputMode == DirectOutputMode.ClearOnChange);
+                }
+                finally
+                {
+                    _historyLock.Release();
                 }
 
                 // restore cursor
@@ -403,33 +418,83 @@ namespace AnyConsole
             _frameDrawnComplete.Set();
         }
 
-        private void RenderDirectOutput(TextWriter stdout)
+        private void ClearDirectOutput(TextWriter stdout)
         {
-            var cursorLeft = Console.CursorLeft;
-            var cursorTop = Console.CursorTop;
-            var originalForeground = Console.ForegroundColor;
-            var originalBackground = Console.BackgroundColor;
             _historyLock.Wait();
             try
             {
-                foreach (var entry in _directOutputEntries)
+                if (_directOutputEntries.Any(x => x.Clear && !x.IsCleared))
                 {
-                    Console.SetCursorPosition(entry.X, entry.Y);
-                    if (entry.ForegroundColor.HasValue)
-                        Console.ForegroundColor = entry.ForegroundColor.Value;
-                    if (entry.BackgroundColor.HasValue)
-                        Console.BackgroundColor = entry.BackgroundColor.Value;
-                    stdout.Write(entry.Text);
-                    entry.IsDisplayed = true;
+                    var cursorLeft = Console.CursorLeft;
+                    var cursorTop = Console.CursorTop;
+                    var originalBackground = Console.BackgroundColor;
+
+                    foreach (var entry in _directOutputEntries.Where(x => x.Clear && !x.IsCleared))
+                    {
+                        Console.SetCursorPosition(entry.X, entry.Y);
+                        if (entry.Clear)
+                        {
+                            stdout.Write(new string(' ', entry.Length));
+                            entry.IsCleared = true;
+                        }
+                    }
+                    Console.BackgroundColor = originalBackground;
+                    Console.SetCursorPosition(cursorLeft, cursorTop);
                 }
             }
             finally
             {
                 _historyLock.Release();
             }
-            Console.ForegroundColor = originalForeground;
-            Console.BackgroundColor = originalBackground;
-            Console.SetCursorPosition(cursorLeft, cursorTop);
+        }
+
+        private void RenderDirectOutput(TextWriter stdout)
+        {
+            _historyLock.Wait();
+            try
+            {
+                if (_directOutputEntries.Any(x => !x.Clear))
+                {
+                    var cursorLeft = Console.CursorLeft;
+                    var cursorTop = Console.CursorTop;
+                    var originalForeground = Console.ForegroundColor;
+                    var originalBackground = Console.BackgroundColor;
+                    foreach (var entry in _directOutputEntries.Where(x => !x.Clear))
+                    {
+                        if (entry.Text != null)
+                        {
+                            // standard text entry
+                            Console.SetCursorPosition(entry.X, entry.Y);
+                            if (entry.ForegroundColor.HasValue)
+                                Console.ForegroundColor = entry.ForegroundColor.Value;
+                            if (entry.BackgroundColor.HasValue)
+                                Console.BackgroundColor = entry.BackgroundColor.Value;
+                            stdout.Write(entry.Text);
+                        }
+                        else
+                        {
+                            // textBuilder entry
+                            Console.SetCursorPosition(entry.X, entry.Y);
+                            foreach (var fragment in entry.TextBuilder.TextFragments)
+                            {
+                                if (fragment.ForegroundColor.HasValue)
+                                    Console.ForegroundColor = fragment.ForegroundColor.Value;
+                                if (fragment.BackgroundColor.HasValue)
+                                    Console.BackgroundColor = fragment.BackgroundColor.Value;
+                                stdout.Write(fragment.Text);
+                            }
+                        }
+                        entry.IsDisplayed = true;
+                    }
+                    Console.ForegroundColor = originalForeground;
+                    Console.BackgroundColor = originalBackground;
+                    Console.SetCursorPosition(cursorLeft, cursorTop);
+                }
+            }
+            finally
+            {
+                _historyLock.Release();
+            }
         }
 
         private void RenderHelpWindow(TextWriter stdout)
