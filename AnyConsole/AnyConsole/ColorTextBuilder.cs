@@ -45,9 +45,17 @@ namespace AnyConsole
             return this;
         }
 
+        public ColorTextBuilder AppendLine()
+        {
+            TextFragments.Add(new ColoredTextFragment(Environment.NewLine));
+            return this;
+        }
+
         public override string ToString()
         {
-            return string.Join("", TextFragments);
+            return string.Join("", TextFragments.Select(x => x.Text));
         }
+
+        public static implicit operator string(ColorTextBuilder textBuilder) => textBuilder.ToString();
     }
 }

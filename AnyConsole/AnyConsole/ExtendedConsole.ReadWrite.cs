@@ -63,6 +63,18 @@ namespace AnyConsole
         public void WriteLine(StringBuilder text, FigletFont font) => WriteLine(text.ToString(), font);
 
         /// <summary>
+        /// Write text
+        /// </summary>
+        /// <param name="textBuilder"></param>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <param name="directOutputMode">The mode which indicates when the text should be cleared</param>
+        public void WriteLine(ColorTextBuilder textBuilder)
+        {
+            // not yet supported
+        }
+
+        /// <summary>
         /// Write using a Figlet font
         /// </summary>
         /// <param name="text"></param>
@@ -82,6 +94,18 @@ namespace AnyConsole
         public void Write(StringBuilder text, FigletFont font) => Write(text.ToString(), font);
 
         /// <summary>
+        /// Write text
+        /// </summary>
+        /// <param name="textBuilder"></param>
+        /// <param name="xPos"></param>
+        /// <param name="yPos"></param>
+        /// <param name="directOutputMode">The mode which indicates when the text should be cleared</param>
+        public void Write(ColorTextBuilder textBuilder)
+        {
+            // not yet supported
+        }
+
+        /// <summary>
         /// Write using the default Figlet font
         /// </summary>
         /// <param name="text"></param>
@@ -97,6 +121,12 @@ namespace AnyConsole
         /// </summary>
         /// <param name="text"></param>
         public void WriteAscii(StringBuilder text) => WriteAscii(text.ToString());
+
+        /// <summary>
+        /// Write using the default Figlet font
+        /// </summary>
+        /// <param name="text"></param>
+        public void WriteAscii(ColorTextBuilder textBuilder) => WriteAscii(textBuilder.ToString());
 
         /// <summary>
         /// Write raw text that will not be formatted and will not contain prepend string

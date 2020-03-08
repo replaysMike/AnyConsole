@@ -12,7 +12,7 @@ namespace AnyConsole
     /// <summary>
     /// Extended Console
     /// </summary>
-    public partial class ExtendedConsole : IExtendedConsole, IDisposable
+    public partial class ExtendedConsole : IExtendedConsole
     {
         private bool _isDisposed;
         private StringBuilder _screenHeaderBuilder = new StringBuilder();
@@ -70,6 +70,17 @@ namespace AnyConsole
         /// Console options
         /// </summary>
         public ConsoleOptions Options { get; }
+
+        /// <summary>
+        /// True if stdout is redirected
+        /// </summary>
+        public bool IsOutputRedirected => Console.IsOutputRedirected;
+
+        /// <summary>
+        /// True if stderr is redirected
+        /// </summary>
+        public bool IsErrorRedirected => Console.IsErrorRedirected;
+
         /// <summary>
         /// Console configuration
         /// </summary>
