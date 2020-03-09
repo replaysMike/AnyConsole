@@ -30,6 +30,13 @@ namespace AnyConsole
         bool IsErrorRedirected { get; }
 
         /// <summary>
+        /// Set the cursor position
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        void SetCursorPosition(int x, int y);
+
+        /// <summary>
         /// Configure the console
         /// </summary>
         /// <param name="config"></param>

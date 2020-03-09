@@ -171,6 +171,17 @@ namespace AnyConsole
             _bufferingComplete.WaitOne();
         }
 
+        /// <summary>
+        /// Set the cursor position
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public void SetCursorPosition(int x, int y)
+        {
+            if (!IsOutputRedirected)
+                Console.SetCursorPosition(x, y);
+        }
+
         private void RegisterComponents()
         {
             var components = _staticRowContentBuilder.SelectMany(x => x.Value.Select(y => y.Component)).Distinct().ToList();
