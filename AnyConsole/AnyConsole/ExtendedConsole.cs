@@ -72,6 +72,15 @@ namespace AnyConsole
         public ConsoleOptions Options { get; }
 
         /// <summary>
+        /// Set/get the console encoding
+        /// </summary>
+        public Encoding OutputEncoding
+        {
+            get { return Console.OutputEncoding; }
+            set { Console.OutputEncoding = value; }
+        }
+
+        /// <summary>
         /// True if stdout is redirected
         /// </summary>
         public bool IsOutputRedirected => Console.IsOutputRedirected;
@@ -161,8 +170,6 @@ namespace AnyConsole
         {
             _bufferingComplete.WaitOne();
         }
-
-        
 
         private void RegisterComponents()
         {

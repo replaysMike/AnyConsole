@@ -15,6 +15,11 @@ namespace AnyConsole
         ConsoleOptions Options { get; }
 
         /// <summary>
+        /// Set/get the console encoding
+        /// </summary>
+        Encoding OutputEncoding { get; set; }
+
+        /// <summary>
         /// True if stdout is redirected
         /// </summary>
         bool IsOutputRedirected { get; }

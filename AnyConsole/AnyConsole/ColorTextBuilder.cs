@@ -27,15 +27,16 @@ namespace AnyConsole
             TextFragments = new List<ColoredTextFragment>(10);
         }
 
-        public ColorTextBuilder Append(string text)
-        {
-            TextFragments.Add(new ColoredTextFragment(text, Color.Gray));
-            return this;
-        }
-
         public ColorTextBuilder Append(string text, Color? foregroundColor = null, Color? backgroundColor = null)
         {
             TextFragments.Add(new ColoredTextFragment(text, foregroundColor, backgroundColor));
+            return this;
+        }
+
+        public ColorTextBuilder AppendIf(bool condition, string text, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if (condition)
+                TextFragments.Add(new ColoredTextFragment(text, foregroundColor, backgroundColor));
             return this;
         }
 
@@ -45,16 +46,20 @@ namespace AnyConsole
             return this;
         }
 
+        public ColorTextBuilder AppendLineIf(bool condition, string text, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if(condition)
+                TextFragments.Add(new ColoredTextFragment(text + Environment.NewLine, foregroundColor, backgroundColor));
+            return this;
+        }
+
         public ColorTextBuilder AppendLine()
         {
             TextFragments.Add(new ColoredTextFragment(Environment.NewLine));
             return this;
         }
 
-        public override string ToString()
-        {
-            return string.Join("", TextFragments.Select(x => x.Text));
-        }
+        public override string ToString() => string.Join("", TextFragments.Select(x => x.Text));
 
         public static implicit operator string(ColorTextBuilder textBuilder) => textBuilder.ToString();
     }
