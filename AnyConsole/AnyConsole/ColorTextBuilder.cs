@@ -36,7 +36,7 @@ namespace AnyConsole
         public ColorTextBuilder AppendIf(bool condition, ColorTextBuilder builder)
         {
             if (condition)
-                TextFragments.AddRange(builder.TextFragments);
+                Append(builder);
             return this;
         }
 
@@ -61,8 +61,8 @@ namespace AnyConsole
 
         public ColorTextBuilder AppendLineIf(bool condition, string text, Color? foregroundColor = null, Color? backgroundColor = null)
         {
-            if(condition)
-                TextFragments.Add(new ColoredTextFragment(text + Environment.NewLine, foregroundColor, backgroundColor));
+            if (condition)
+                AppendLine(text, foregroundColor, backgroundColor);
             return this;
         }
 
@@ -81,7 +81,20 @@ namespace AnyConsole
         public ColorTextBuilder AppendIf(bool condition, Func<int, string> action, Color? foregroundColor = null, Color? backgroundColor = null)
         {
             if (condition)
-                TextFragments.Add(new ColoredTextFragment(action.Invoke(Length), foregroundColor, backgroundColor));
+                Append(action, foregroundColor, backgroundColor);
+            return this;
+        }
+
+        public ColorTextBuilder Append(Func<int, ColorTextBuilder> action)
+        {
+            TextFragments.AddRange(action.Invoke(Length).TextFragments);
+            return this;
+        }
+
+        public ColorTextBuilder AppendIf(bool condition, Func<int, ColorTextBuilder> action)
+        {
+            if (condition)
+                Append(action);
             return this;
         }
 
