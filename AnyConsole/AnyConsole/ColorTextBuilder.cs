@@ -10,7 +10,7 @@ namespace AnyConsole
     /// </summary>
     public class ColorTextBuilder
     {
-        public ICollection<ColoredTextFragment> TextFragments { get; private set; }
+        public List<ColoredTextFragment> TextFragments { get; private set; }
 
         public int Length => TextFragments?.Sum(x => x.Text?.Length ?? 0) ?? 0;
 
@@ -25,6 +25,19 @@ namespace AnyConsole
         public ColorTextBuilder()
         {
             TextFragments = new List<ColoredTextFragment>(10);
+        }
+
+        public ColorTextBuilder Append(ColorTextBuilder builder)
+        {
+            TextFragments.AddRange(builder.TextFragments);
+            return this;
+        }
+
+        public ColorTextBuilder AppendIf(bool condition, ColorTextBuilder builder)
+        {
+            if (condition)
+                TextFragments.AddRange(builder.TextFragments);
+            return this;
         }
 
         public ColorTextBuilder Append(string text, Color? foregroundColor = null, Color? backgroundColor = null)
