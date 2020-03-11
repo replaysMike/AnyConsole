@@ -72,6 +72,19 @@ namespace AnyConsole
             return this;
         }
 
+        public ColorTextBuilder Append(Func<int, string> action, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            TextFragments.Add(new ColoredTextFragment(action.Invoke(Length), foregroundColor, backgroundColor));
+            return this;
+        }
+
+        public ColorTextBuilder AppendIf(bool condition, Func<int, string> action, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if (condition)
+                TextFragments.Add(new ColoredTextFragment(action.Invoke(Length), foregroundColor, backgroundColor));
+            return this;
+        }
+
         public override string ToString() => string.Join("", TextFragments.Select(x => x.Text));
 
         public static implicit operator string(ColorTextBuilder textBuilder) => textBuilder.ToString();
