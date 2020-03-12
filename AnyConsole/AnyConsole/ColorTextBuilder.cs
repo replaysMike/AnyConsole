@@ -86,6 +86,13 @@ namespace AnyConsole
             return this;
         }
 
+        public ColorTextBuilder AppendIf(Func<int, bool> condition, Func<int, string> action, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if (condition?.Invoke(Length) == true)
+                Append(action, foregroundColor, backgroundColor);
+            return this;
+        }
+
         public ColorTextBuilder Append(Func<int, ColorTextBuilder> action)
         {
             TextFragments.AddRange(action.Invoke(Length).TextFragments);
