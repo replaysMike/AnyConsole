@@ -504,13 +504,24 @@ namespace AnyConsole
                         {
                             // textBuilder entry
                             Console.SetCursorPosition(entry.X, entry.Y);
+                            var totalLength = 0;
                             foreach (var fragment in entry.TextBuilder.TextFragments)
                             {
                                 if (fragment.ForegroundColor.HasValue)
                                     Console.ForegroundColor = fragment.ForegroundColor.Value;
                                 if (fragment.BackgroundColor.HasValue)
                                     Console.BackgroundColor = fragment.BackgroundColor.Value;
-                                stdout.Write(fragment.Text);
+                                var fragmentText = fragment.Text;
+                                if (entry.TextBuilder.MaxLength.HasValue && totalLength + fragmentText.Length > entry.TextBuilder.MaxLength.Value)
+                                {
+                                    // truncate the text
+                                    var len = entry.TextBuilder.MaxLength.Value - (totalLength + fragmentText.Length);
+                                    fragmentText = fragmentText.Substring(0, len);
+                                    stdout.Write(fragmentText);
+                                    break;
+                                }
+                                stdout.Write(fragmentText);
+                                totalLength += fragment.Text.Length;
                             }
                         }
                         entry.IsDisplayed = true;
