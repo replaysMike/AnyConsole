@@ -13,6 +13,7 @@ namespace AnyConsole
         public List<ColoredTextFragment> TextFragments { get; private set; }
 
         public int Length => TextFragments?.Sum(x => x.Text?.Length ?? 0) ?? 0;
+        public int? MaxLength;
 
         /// <summary>
         /// Create a new TextBuilder
@@ -105,7 +106,33 @@ namespace AnyConsole
             return this;
         }
 
-        public override string ToString() => string.Join("", TextFragments.Select(x => x.Text));
+        public ColorTextBuilder Truncate(int length)
+        {
+            MaxLength = length;
+            return this;
+        }
+
+        public ColorTextBuilder TruncateIf(bool condition, int length)
+        {
+            if (condition)
+                MaxLength = length;
+            return this;
+        }
+
+        public ColorTextBuilder TruncateIf(Func<int, bool> condition, int length)
+        {
+            if (condition?.Invoke(Length) == true)
+                MaxLength = length;
+            return this;
+        }
+
+        public override string ToString()
+        {
+            var str = string.Join("", TextFragments.Select(x => x.Text));
+            if (MaxLength.HasValue)
+                str = str.Substring(0, MaxLength.Value);
+            return str;
+        }
 
         public static implicit operator string(ColorTextBuilder textBuilder) => textBuilder.ToString();
     }
