@@ -98,6 +98,13 @@ namespace AnyConsole
             return this;
         }
 
+        public ColorTextBuilder AppendIf(Func<int, bool> condition, Func<int, ColorTextBuilder> action)
+        {
+            if (condition?.Invoke(Length) == true)
+                Append(action);
+            return this;
+        }
+
         public override string ToString() => string.Join("", TextFragments.Select(x => x.Text));
 
         public static implicit operator string(ColorTextBuilder textBuilder) => textBuilder.ToString();
