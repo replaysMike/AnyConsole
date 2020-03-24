@@ -133,6 +133,33 @@ namespace AnyConsole
             return this;
         }
 
+        /// <summary>
+        /// Interlace two builders together on the Y axis
+        /// </summary>
+        /// <param name="builder1"></param>
+        /// <param name="builder2"></param>
+        /// <param name="xSpacing">Optional amount of spacing between lines on X axis</param>
+        /// <returns></returns>
+        public ColorTextBuilder Interlace(ColorTextBuilder builder1, ColorTextBuilder builder2, int xSpacing = 0)
+        {
+            var interlacedBuilder = new ColorTextBuilder();
+
+            var index = 0;
+            foreach(var line in builder1.TextFragments)
+            {
+                interlacedBuilder.TextFragments.Add(line);
+                if (builder2.TextFragments.Count > index)
+                {
+                    if (xSpacing > 0)
+                        interlacedBuilder.TextFragments.Add(new ColoredTextFragment(new string(' ', xSpacing), line.ForegroundColor, line.BackgroundColor));
+                    interlacedBuilder.TextFragments.Add(builder2.TextFragments[index]);
+                }
+                index++;
+            }
+
+            return interlacedBuilder;
+        }
+
         public override string ToString()
         {
             var str = string.Join("", TextFragments.Select(x => x.Text));

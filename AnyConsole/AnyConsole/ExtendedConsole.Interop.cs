@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace AnyConsole
@@ -435,6 +438,155 @@ namespace AnyConsole
             VK_NONAME = 0xFC,
             VK_PA1 = 0xFD,
             VK_OEM_CLEAR = 0xFE
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        extern static bool GetCurrentConsoleFontEx(IntPtr hConsoleOutput, bool bMaximumWindow, ref CONSOLE_FONT_INFO_EX lpConsoleCurrentFont);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetCurrentConsoleFontEx(IntPtr consoleOutput, bool maximumWindow, ref CONSOLE_FONT_INFO_EX consoleCurrentFontEx);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct CONSOLE_FONT_INFO_EX
+        {
+            public uint cbSize;
+            public uint nFont;
+            public COORD dwFontSize;
+            public int FontFamily;
+            public int FontWeight;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = LF_FACESIZE)]
+            public string FaceName;
+        }
+
+        [DllImport("gdi32.dll")]
+        private static extern uint GetFontUnicodeRanges(IntPtr hdc, IntPtr lpgs);
+
+        [DllImport("gdi32.dll")]
+        private extern static IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
+
+        public struct FontRange
+        {
+            public ushort Low;
+            public ushort High;
+            public override string ToString() => $"{Low} - {High} ({Low:X0} - {High:X0})";
+        }
+
+        private enum StdHandle
+        {
+            OutputHandle = -11
+        }
+
+        private const int TMPF_TRUETYPE = 4;
+        private const int LF_FACESIZE = 32;
+
+        [DllImport("kernel32")]
+        private static extern IntPtr GetStdHandle(StdHandle index);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct COORD
+        {
+            public short X;
+            public short Y;
+
+            public COORD(short x, short y)
+            {
+                X = x;
+                Y = y;
+            }
+        }
+
+        public struct FontCapabilities
+        {
+            public string FontName;
+            public short XSize;
+            public short YSize;
+            public int Weight;
+            public bool SupportsDesiredUnicodeRanges;
+        }
+
+        public static void SetCurrentFont(string fontName, short? xSize = null, short? ySize = null, int? weight = null)
+        {
+            var handle = GetStdHandle(StdHandle.OutputHandle);
+            var info = GetCurrentFontInfo(handle);
+            var newInfo = new CONSOLE_FONT_INFO_EX();
+            newInfo.cbSize = (uint)Marshal.SizeOf(newInfo);
+            newInfo.FontFamily = TMPF_TRUETYPE;
+            newInfo.FaceName = fontName;
+            newInfo.dwFontSize.X = xSize ?? info.dwFontSize.X;
+            newInfo.dwFontSize.Y = ySize ?? info.dwFontSize.Y;
+            newInfo.FontWeight = weight ?? info.FontWeight;
+            SetCurrentConsoleFontEx(handle, false, ref newInfo);
+        }
+
+        private static CONSOLE_FONT_INFO_EX GetCurrentFontInfo(IntPtr handle)
+        {
+            var info = new CONSOLE_FONT_INFO_EX();
+            info.cbSize = (uint)Marshal.SizeOf(info);
+            GetCurrentConsoleFontEx(handle, false, ref info);
+            return info;
+        }
+
+        public static FontCapabilities GetCurrentFont()
+        {
+            var handle = GetStdHandle(StdHandle.OutputHandle);
+            var info = GetCurrentFontInfo(handle);
+            var isTrueType = (info.FontFamily & TMPF_TRUETYPE) == TMPF_TRUETYPE;
+            var fontName = info.FaceName;
+            var font = new Font(fontName, 10);
+            var ranges = GetUnicodeRangesForFont(font);
+            // ‭10240‬, ‭10495‬
+            var min = 0x2801;
+            var max = 0x28FF;
+            // var test = CheckIfCharInFont('•', font);
+            // int unicodeValue = Convert.ToUInt16('\u2801');
+            var supportsDesiredUnicodeRanges = ranges.Any(x => (x.Low >= min && x.High <= min) && (x.Low <= max && x.High >= max));
+
+            return new FontCapabilities {
+                FontName = fontName,
+                SupportsDesiredUnicodeRanges = supportsDesiredUnicodeRanges
+            };
+        }
+
+        private static bool CheckIfCharacterInFont(char character, Font font)
+        {
+            var intval = Convert.ToUInt16(character);
+            var ranges = GetUnicodeRangesForFont(font);
+            var isCharacterPresent = false;
+            foreach (var range in ranges)
+            {
+                if (intval >= range.Low && intval <= range.High)
+                {
+                    isCharacterPresent = true;
+                    break;
+                }
+            }
+            return isCharacterPresent;
+        }
+
+        private static List<FontRange> GetUnicodeRangesForFont(Font font)
+        {
+            var g = Graphics.FromHwnd(IntPtr.Zero);
+            var hdc = g.GetHdc();
+            var hFont = font.ToHfont();
+            var old = SelectObject(hdc, hFont);
+            var size = GetFontUnicodeRanges(hdc, IntPtr.Zero);
+            var glyphSet = Marshal.AllocHGlobal((int)size);
+            GetFontUnicodeRanges(hdc, glyphSet);
+            var fontRanges = new List<FontRange>();
+            var count = Marshal.ReadInt32(glyphSet, 12);
+            for (var i = 0; i < count; i++)
+            {
+                var range = new FontRange();
+                range.Low = (UInt16)Marshal.ReadInt16(glyphSet, 16 + i * 4);
+                range.High = (UInt16)(range.Low + Marshal.ReadInt16(glyphSet, 18 + i * 4) - 1);
+                fontRanges.Add(range);
+            }
+            SelectObject(hdc, old);
+            Marshal.FreeHGlobal(glyphSet);
+            g.ReleaseHdc(hdc);
+            g.Dispose();
+            return fontRanges;
         }
     }
 }

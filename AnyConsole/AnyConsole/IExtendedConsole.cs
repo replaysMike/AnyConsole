@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using static AnyConsole.ExtendedConsole;
 
 namespace AnyConsole
 {
@@ -56,6 +58,91 @@ namespace AnyConsole
         /// Block until the application has closed
         /// </summary>
         void WaitForClose();
+
+        /// <summary>
+        /// Window left position
+        /// </summary>
+        int WindowLeft { get; set; }
+
+        /// <summary>
+        /// Window top position
+        /// </summary>
+        int WindowTop { get; set; }
+
+        /// <summary>
+        /// Window height
+        /// </summary>
+        int WindowHeight { get; set; }
+
+        /// <summary>
+        /// Window width
+        /// </summary>
+        int WindowWidth { get; set; }
+
+        /// <summary>
+        /// Cursor left position
+        /// </summary>
+        int CursorLeft { get; set; }
+
+        /// <summary>
+        /// Cursor top position
+        /// </summary>
+        int CursorTop { get; set; }
+
+        /// <summary>
+        /// Console title
+        /// </summary>
+        string Title { get; set; }
+
+        /// <summary>
+        /// Get/set the foreground color
+        /// </summary>
+        Color ForegroundColor { get; set; }
+
+        /// <summary>
+        /// Get/set the background color
+        /// </summary>
+        Color BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Get/set if the cursor should be visible
+        /// </summary>
+        bool CursorVisible { get; set; }
+
+        /// <summary>
+        /// Get/set the font name
+        /// </summary>
+        string FontName { get; set; }
+
+        /// <summary>
+        /// Get/set the font X size
+        /// </summary>
+        short FontXSize { get; set; }
+
+        /// <summary>
+        /// Get/set the font Y size
+        /// </summary>
+        short FontYSize { get; set; }
+
+        /// <summary>
+        /// Get/set the font weight
+        /// </summary>
+        int FontWeight { get; set; }
+
+        /// <summary>
+        /// Check if a character is in a given font
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="font"></param>
+        /// <returns></returns>
+        bool CheckIfCharInFont(char character, Font font);
+
+        /// <summary>
+        /// Get the character ranges available for a font
+        /// </summary>
+        /// <param name="font"></param>
+        /// <returns></returns>
+        ICollection<FontRange> GetFontUnicodeRanges(Font font);
 
         /// <summary>
         /// Reads the next line of characters from the standard input stream
