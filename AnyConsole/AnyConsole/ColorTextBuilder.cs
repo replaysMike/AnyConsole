@@ -54,6 +54,13 @@ namespace AnyConsole
             return this;
         }
 
+        public ColorTextBuilder AppendLine(ColorTextBuilder builder)
+        {
+            TextFragments.AddRange(builder.TextFragments);
+            TextFragments.Add(new ColoredTextFragment(Environment.NewLine));
+            return this;
+        }
+
         public ColorTextBuilder AppendLine(string text, Color? foregroundColor = null, Color? backgroundColor = null)
         {
             TextFragments.Add(new ColoredTextFragment(text + Environment.NewLine, foregroundColor, backgroundColor));
@@ -136,16 +143,15 @@ namespace AnyConsole
         /// <summary>
         /// Interlace two builders together on the Y axis
         /// </summary>
-        /// <param name="builder1"></param>
         /// <param name="builder2"></param>
         /// <param name="xSpacing">Optional amount of spacing between lines on X axis</param>
         /// <returns></returns>
-        public ColorTextBuilder Interlace(ColorTextBuilder builder1, ColorTextBuilder builder2, int xSpacing = 0)
+        public ColorTextBuilder Interlace(ColorTextBuilder builder2, int xSpacing = 0)
         {
             var interlacedBuilder = new ColorTextBuilder();
 
             var index = 0;
-            foreach(var line in builder1.TextFragments)
+            foreach(var line in TextFragments)
             {
                 interlacedBuilder.TextFragments.Add(line);
                 if (builder2.TextFragments.Count > index)
