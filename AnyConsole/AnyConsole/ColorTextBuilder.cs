@@ -150,17 +150,37 @@ namespace AnyConsole
         {
             var interlacedBuilder = new ColorTextBuilder();
 
-            var index = 0;
-            foreach(var line in TextFragments)
+            var enumerator1 = TextFragments.GetEnumerator();
+            var enumerator2 = builder2.TextFragments.GetEnumerator();
+
+            while(enumerator1.MoveNext())
             {
-                interlacedBuilder.TextFragments.Add(line);
-                if (builder2.TextFragments.Count > index)
+                var line = enumerator1.Current;
+                if (line.Text.Contains(Environment.NewLine))
                 {
+                    // move to the next builder
+                    line.Text = line.Text.Replace(Environment.NewLine, string.Empty);
+                    interlacedBuilder.TextFragments.Add(line);
+                    // add spaces if we are requested to separate the blocks of text
                     if (xSpacing > 0)
                         interlacedBuilder.TextFragments.Add(new ColoredTextFragment(new string(' ', xSpacing), line.ForegroundColor, line.BackgroundColor));
-                    interlacedBuilder.TextFragments.Add(builder2.TextFragments[index]);
+
+                    // start printing the next builder
+                    while (enumerator2.MoveNext())
+                    {
+                        var line2 = enumerator2.Current;
+                        interlacedBuilder.TextFragments.Add(line2);
+                        if (line2.Text.Contains(Environment.NewLine))
+                        {
+                            // done with this line, move back to parent builder and start the next line
+                            break;
+                        }
+                    }
                 }
-                index++;
+                else
+                {
+                    interlacedBuilder.TextFragments.Add(line);
+                }
             }
 
             return interlacedBuilder;
