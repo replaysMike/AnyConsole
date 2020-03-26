@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 
 namespace AnyConsole
 {
@@ -12,8 +13,25 @@ namespace AnyConsole
     {
         public List<ColoredTextFragment> TextFragments { get; private set; }
 
+        /// <summary>
+        /// Get the total text length the string
+        /// </summary>
         public int Length => TextFragments?.Sum(x => x.Text?.Length ?? 0) ?? 0;
-        public int? MaxLength;
+
+        /// <summary>
+        /// Get the calculated width of the longest line in the text block
+        /// </summary>
+        public int Width => GetFragmentWidth();
+
+        /// <summary>
+        /// Get the calculated height of the text block
+        /// </summary>
+        public int Height => GetFragmentHeight();
+
+        /// <summary>
+        /// Get/set the total maximum length of the string
+        /// </summary>
+        public int? MaxLength { get; set; }
 
         /// <summary>
         /// Create a new TextBuilder
@@ -26,6 +44,88 @@ namespace AnyConsole
         public ColorTextBuilder()
         {
             TextFragments = new List<ColoredTextFragment>(10);
+        }
+
+        private int GetFragmentWidth()
+        {
+            var width = 0;
+            var line = new StringBuilder();
+            foreach(var fragment in TextFragments)
+            {
+                line.Append(fragment.Text);
+                if (fragment.Text.Contains(Environment.NewLine))
+                {
+                    line.Replace(Environment.NewLine, string.Empty);
+                    width = Math.Max(line.Length, width);
+                    line = new StringBuilder();
+                }
+            }
+            return width;
+        }
+
+        private int GetFragmentHeight()
+        {
+            var str = ToString().Replace("\r", string.Empty);
+            var lineCount = str.Count(c => c == '\n');
+
+            // if there is any trailing text after the final newline, count it as a new line
+            var lastNewline = str.LastIndexOf('\n');
+            if (lastNewline < str.Length - 1)
+                lineCount++;
+
+            return lineCount;
+        }
+
+        public ColorTextBuilder Prepend(ColorTextBuilder builder)
+        {
+            TextFragments.InsertRange(0, builder.TextFragments);
+            return this;
+        }
+
+        public ColorTextBuilder PrependIf(bool condition, ColorTextBuilder builder)
+        {
+            if (condition)
+                Prepend(builder);
+            return this;
+        }
+
+        public ColorTextBuilder Prepend(string text, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            TextFragments.Insert(0, new ColoredTextFragment(text, foregroundColor, backgroundColor));
+            return this;
+        }
+
+        public ColorTextBuilder PrependIf(bool condition, string text, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if (condition)
+                TextFragments.Insert(0, new ColoredTextFragment(text, foregroundColor, backgroundColor));
+            return this;
+        }
+
+        public ColorTextBuilder PrependLine(ColorTextBuilder builder)
+        {
+            TextFragments.Insert(0, new ColoredTextFragment(Environment.NewLine));
+            TextFragments.InsertRange(0, builder.TextFragments);
+            return this;
+        }
+
+        public ColorTextBuilder PrependLine(string text, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            TextFragments.Insert(0, new ColoredTextFragment(text + Environment.NewLine, foregroundColor, backgroundColor));
+            return this;
+        }
+
+        public ColorTextBuilder PrependLineIf(bool condition, string text, Color? foregroundColor = null, Color? backgroundColor = null)
+        {
+            if (condition)
+                PrependLine(text, foregroundColor, backgroundColor);
+            return this;
+        }
+
+        public ColorTextBuilder PrependLine()
+        {
+            TextFragments.Insert(0, new ColoredTextFragment(Environment.NewLine));
+            return this;
         }
 
         public ColorTextBuilder Append(ColorTextBuilder builder)
@@ -137,6 +237,12 @@ namespace AnyConsole
         {
             if (condition?.Invoke(Length) == true)
                 MaxLength = length;
+            return this;
+        }
+
+        public ColorTextBuilder Clear()
+        {
+            TextFragments.Clear();
             return this;
         }
 

@@ -83,5 +83,55 @@ namespace AnyConsole.Tests
             var str = interlaced.ToString();
             Assert.AreEqual($"Left side:1{new string(' ', spacing)}Right side:1{Environment.NewLine}Left side:2{new string(' ', spacing)}Right side:2{Environment.NewLine}", str);
         }
+
+        [Test]
+        public void ColorTextBuilder_GetWidth()
+        {
+            var builder = new ColorTextBuilder();
+            builder.Append("Test");
+            builder.Append("Two");
+            builder.AppendLine("Three");
+            builder.Append("Four");
+            builder.Append("Five");
+            builder.AppendLine("Six");
+            builder.Append("Seven");
+            builder.AppendLine("This is the final string");
+            var width = builder.Width;
+            Assert.AreEqual("SevenThis is the final string".Length, width);
+        }
+
+        [Test]
+        public void ColorTextBuilder_GetHeight()
+        {
+            var builder = new ColorTextBuilder();
+            builder.Append("Test");
+            builder.Append("Two");
+            builder.AppendLine("Three");
+            builder.Append("Four");
+            builder.Append("Five");
+            builder.AppendLine("Six");
+            builder.Append("Seven");
+            builder.AppendLine("This is the final string");
+            builder.Append("Fourth line");
+            var height = builder.Height;
+            Assert.AreEqual(4, height);
+        }
+
+        [Test]
+        public void ColorTextBuilder_GetHeightTrailingNewline()
+        {
+            var builder = new ColorTextBuilder();
+            builder.Append("Test");
+            builder.Append("Two");
+            builder.AppendLine("Three");
+            builder.Append("Four");
+            builder.Append("Five");
+            builder.AppendLine("Six");
+            builder.Append("Seven");
+            builder.AppendLine("This is the final string");
+            builder.AppendLine();
+            var height = builder.Height;
+            Assert.AreEqual(4, height);
+        }
     }
 }
