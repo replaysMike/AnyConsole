@@ -309,7 +309,7 @@ namespace AnyConsole
                 else
                 {
                     interlacedBuilder.TextFragments.Add(line);
-                    currentLineWidth = line.Text.Length;
+                    currentLineWidth += line.Text.Length;
                 }
             }
 
