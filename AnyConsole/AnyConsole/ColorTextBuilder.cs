@@ -250,17 +250,19 @@ namespace AnyConsole
         /// Interlace two builders together on the Y axis
         /// </summary>
         /// <param name="builder2"></param>
-        /// <param name="xSpacing">Optional amount of spacing between lines on X axis</param>
+        /// <param name="fixedColumnSpacing">Optional amount of spacing between lines on X axis</param>
         /// <param name="fixedColumnWidth">Optional width of fixed columns for the data being interlaced</param>
         /// <returns></returns>
-        public ColorTextBuilder Interlace(ColorTextBuilder builder2, int xSpacing = 0, int fixedColumnWidth = 0)
+        public ColorTextBuilder Interlace(ColorTextBuilder builder2, int fixedColumnSpacing = 0, int fixedColumnWidth = 0)
         {
             var interlacedBuilder = new ColorTextBuilder();
 
             var enumerator1 = TextFragments.GetEnumerator();
             var enumerator2 = builder2.TextFragments.GetEnumerator();
 
-            while(enumerator1.MoveNext())
+            var processedRightCount = 0;
+            var currentLineWidth = 0;
+            while (enumerator1.MoveNext())
             {
                 var line = enumerator1.Current;
                 if (line.Text.Contains(Environment.NewLine))
@@ -271,17 +273,20 @@ namespace AnyConsole
                     if (fixedColumnWidth > 0 && line.Text.Length > fixedColumnWidth)
                         line.Text = line.Text.Substring(0, fixedColumnWidth);
                     if (fixedColumnWidth > 0 && line.Text.Length < fixedColumnWidth)
-                        line.Text = line.Text + new string(' ', fixedColumnWidth - line.Text.Length);
-
+                        line.Text = line.Text + new string(' ', fixedColumnWidth - (currentLineWidth + line.Text.Length));
+                    currentLineWidth = 0;
                     interlacedBuilder.TextFragments.Add(line);
 
                     // add spaces if we are requested to separate the blocks of text
-                    if (xSpacing > 0)
-                        interlacedBuilder.TextFragments.Add(new ColoredTextFragment(new string(' ', xSpacing), line.ForegroundColor, line.BackgroundColor));
+                    if (fixedColumnSpacing > 0)
+                        interlacedBuilder.TextFragments.Add(new ColoredTextFragment(new string(' ', fixedColumnSpacing), line.ForegroundColor, line.BackgroundColor));
 
                     // start printing the next builder
+                    var hasRightSideLines = false;
                     while (enumerator2.MoveNext())
                     {
+                        processedRightCount++;
+                        hasRightSideLines = true;
                         var line2 = enumerator2.Current;
                         interlacedBuilder.TextFragments.Add(line2);
                         if (line2.Text.Contains(Environment.NewLine))
@@ -290,10 +295,37 @@ namespace AnyConsole
                             break;
                         }
                     }
+                    // if we ran out of right side items, add a line break
+                    if (!hasRightSideLines)
+                        interlacedBuilder.TextFragments.Add(new ColoredTextFragment(Environment.NewLine));
                 }
                 else
                 {
                     interlacedBuilder.TextFragments.Add(line);
+                    currentLineWidth = line.Text.Length;
+                }
+            }
+
+            // extra right side data
+            if (processedRightCount < builder2.TextFragments.Count)
+            {
+                var startOfLine = true;
+                while (enumerator2.MoveNext())
+                {
+                    var line2 = enumerator2.Current;
+                    if (startOfLine)
+                    {
+                        var leftPadding = new string(' ', fixedColumnWidth + fixedColumnSpacing);
+                        interlacedBuilder.TextFragments.Add(new ColoredTextFragment(leftPadding));
+                    }
+                    interlacedBuilder.TextFragments.Add(line2);
+                    if (line2.Text.Contains(Environment.NewLine))
+                    {
+                        startOfLine = true;
+                        // done with this line, move back to parent builder and start the next line
+                        continue;
+                    }
+                    startOfLine = false;
                 }
             }
 

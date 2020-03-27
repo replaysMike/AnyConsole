@@ -14,5 +14,7 @@ namespace AnyConsole
             ForegroundColor = foregroundColor;
             BackgroundColor = backgroundColor;
         }
+
+        public override string ToString() => Text;
     }
 }
