@@ -288,11 +288,18 @@ namespace AnyConsole
                         processedRightCount++;
                         hasRightSideLines = true;
                         var line2 = enumerator2.Current;
-                        interlacedBuilder.TextFragments.Add(line2);
                         if (line2.Text.Contains(Environment.NewLine))
                         {
+                            if (fixedColumnWidth > 0 && line2.Text.Length > fixedColumnWidth)
+                                line2.Text = line2.Text.Substring(0, fixedColumnWidth) + Environment.NewLine;
+                            interlacedBuilder.TextFragments.Add(line2);
+
                             // done with this line, move back to parent builder and start the next line
                             break;
+                        }
+                        else
+                        {
+                            interlacedBuilder.TextFragments.Add(line2);
                         }
                     }
                     // if we ran out of right side items, add a line break
@@ -318,12 +325,18 @@ namespace AnyConsole
                         var leftPadding = new string(' ', fixedColumnWidth + fixedColumnSpacing);
                         interlacedBuilder.TextFragments.Add(new ColoredTextFragment(leftPadding));
                     }
-                    interlacedBuilder.TextFragments.Add(line2);
                     if (line2.Text.Contains(Environment.NewLine))
                     {
+                        if (fixedColumnWidth > 0 && line2.Text.Length > fixedColumnWidth)
+                            line2.Text = line2.Text.Substring(0, fixedColumnWidth) + Environment.NewLine;
+                        interlacedBuilder.TextFragments.Add(line2);
                         startOfLine = true;
                         // done with this line, move back to parent builder and start the next line
                         continue;
+                    }
+                    else
+                    {
+                        interlacedBuilder.TextFragments.Add(line2);
                     }
                     startOfLine = false;
                 }

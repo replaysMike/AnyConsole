@@ -69,6 +69,21 @@ namespace AnyConsole.Tests
         }
 
         [Test]
+        public void ColorTextBuilder_ColorTextBuilder_ShouldInterlaceInColumnsAndTruncate()
+        {
+            var builder = new ColorTextBuilder();
+            var builder2 = new ColorTextBuilder();
+            builder.AppendLine("Left side:1 with a really long string that is too wide to fit in a single column");
+            builder.AppendLine("Left side:2");
+            builder2.AppendLine("Right side:1");
+            builder2.AppendLine("Right side:2 is really too long as well");
+
+            var interlaced = builder.Interlace(builder2, 2, 15);
+            var str = interlaced.ToString();
+            Assert.AreEqual($"Left side:1 wit  Right side:1{Environment.NewLine}Left side:2      Right side:2 is{Environment.NewLine}", str);
+        }
+
+        [Test]
         public void ColorTextBuilder_ColorTextBuilder_ShouldInterlaceInColumns()
         {
             var builder = new ColorTextBuilder();
@@ -78,7 +93,7 @@ namespace AnyConsole.Tests
             builder2.AppendLine("Right");
             builder2.AppendLine("Right side:2");
 
-            var interlaced = builder.Interlace(builder2, fixedColumnSpacing: 2, fixedColumnWidth: 15);
+            var interlaced = builder.Interlace(builder2, 2, 15);
             var str = interlaced.ToString();
             // data should be seperated into 2 columns 15 chars wide, plus 2 char padding
             Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2{Environment.NewLine}", str);
@@ -97,7 +112,7 @@ namespace AnyConsole.Tests
             builder2.AppendLine("Right");
             builder2.AppendLine("Right side:2");
 
-            var interlaced = builder.Interlace(builder2, fixedColumnSpacing: 2, fixedColumnWidth: 15);
+            var interlaced = builder.Interlace(builder2, 2, 15);
             var str = interlaced.ToString();
             // data should be seperated into 2 columns 15 chars wide, plus 2 char padding
             Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2{Environment.NewLine}Left side:3      {Environment.NewLine}Left side:4      {Environment.NewLine}", str);
@@ -116,10 +131,29 @@ namespace AnyConsole.Tests
             builder2.AppendLine(" side:3");
             builder2.AppendLine("Right side:4");
 
-            var interlaced = builder.Interlace(builder2, fixedColumnSpacing: 2, fixedColumnWidth: 15);
+            var interlaced = builder.Interlace(builder2, 2, 15);
             var str = interlaced.ToString();
             // data should be seperated into 2 columns 15 chars wide, plus 2 char padding
             Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2{Environment.NewLine}                 Right side:3{Environment.NewLine}                 Right side:4{Environment.NewLine}", str);
+        }
+
+        [Test]
+        public void ColorTextBuilder_MoreRightColorTextBuilder_ShouldInterlaceInColumnsAndTruncate()
+        {
+            var builder = new ColorTextBuilder();
+            var builder2 = new ColorTextBuilder();
+            builder.AppendLine("Left");
+            builder.AppendLine("Left side:2");
+            builder2.AppendLine("Right");
+            builder2.AppendLine("Right side:2");
+            builder2.Append("Right");
+            builder2.AppendLine(" side:3");
+            builder2.AppendLine("Right side:4 is too long");
+
+            var interlaced = builder.Interlace(builder2, 2, 15);
+            var str = interlaced.ToString();
+            // data should be seperated into 2 columns 15 chars wide, plus 2 char padding
+            Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2 is{Environment.NewLine}                 Right side:3{Environment.NewLine}                 Right side:4{Environment.NewLine}", str);
         }
 
         [Test]
