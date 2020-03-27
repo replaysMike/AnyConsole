@@ -153,7 +153,7 @@ namespace AnyConsole.Tests
             var interlaced = builder.Interlace(builder2, 2, 15);
             var str = interlaced.ToString();
             // data should be seperated into 2 columns 15 chars wide, plus 2 char padding
-            Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2 is{Environment.NewLine}                 Right side:3{Environment.NewLine}                 Right side:4{Environment.NewLine}", str);
+            Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2{Environment.NewLine}                 Right side:3{Environment.NewLine}                 Right side:4 is{Environment.NewLine}", str);
         }
 
         [Test]
