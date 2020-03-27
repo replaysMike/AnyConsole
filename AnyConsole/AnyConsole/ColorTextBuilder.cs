@@ -272,7 +272,7 @@ namespace AnyConsole
                     // add spaces to format content in a column if asked
                     if (fixedColumnWidth > 0 && line.Text.Length > fixedColumnWidth)
                         line.Text = line.Text.Substring(0, fixedColumnWidth);
-                    if (fixedColumnWidth > 0 && line.Text.Length < fixedColumnWidth)
+                    if (fixedColumnWidth > 0 && (currentLineWidth + line.Text.Length) < fixedColumnWidth)
                         line.Text = line.Text + new string(' ', fixedColumnWidth - (currentLineWidth + line.Text.Length));
                     currentLineWidth = 0;
                     interlacedBuilder.TextFragments.Add(line);
