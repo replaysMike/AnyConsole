@@ -69,6 +69,22 @@ namespace AnyConsole.Tests
         }
 
         [Test]
+        public void ColorTextBuilder_ColorTextBuilder_ShouldInterlaceInColumns()
+        {
+            var builder = new ColorTextBuilder();
+            var builder2 = new ColorTextBuilder();
+            builder.AppendLine("Left");
+            builder.AppendLine("Left side:2");
+            builder2.AppendLine("Right");
+            builder2.AppendLine("Right side:2");
+
+            var interlaced = builder.Interlace(builder2, xSpacing: 2, fixedColumnWidth: 15);
+            var str = interlaced.ToString();
+            // data should be seperated into 2 columns 15 chars wide, plus 2 char padding
+            Assert.AreEqual($"Left             Right{Environment.NewLine}Left side:2      Right side:2{Environment.NewLine}", str);
+        }
+
+        [Test]
         public void ColorTextBuilder_ColorTextBuilder_ShouldInterlaceWithSpacing()
         {
             var builder = new ColorTextBuilder();

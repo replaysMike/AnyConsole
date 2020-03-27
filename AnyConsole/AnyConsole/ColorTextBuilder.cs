@@ -251,8 +251,9 @@ namespace AnyConsole
         /// </summary>
         /// <param name="builder2"></param>
         /// <param name="xSpacing">Optional amount of spacing between lines on X axis</param>
+        /// <param name="fixedColumnWidth">Optional width of fixed columns for the data being interlaced</param>
         /// <returns></returns>
-        public ColorTextBuilder Interlace(ColorTextBuilder builder2, int xSpacing = 0)
+        public ColorTextBuilder Interlace(ColorTextBuilder builder2, int xSpacing = 0, int fixedColumnWidth = 0)
         {
             var interlacedBuilder = new ColorTextBuilder();
 
@@ -266,7 +267,14 @@ namespace AnyConsole
                 {
                     // move to the next builder
                     line.Text = line.Text.Replace(Environment.NewLine, string.Empty);
+                    // add spaces to format content in a column if asked
+                    if (fixedColumnWidth > 0 && line.Text.Length > fixedColumnWidth)
+                        line.Text = line.Text.Substring(0, fixedColumnWidth);
+                    if (fixedColumnWidth > 0 && line.Text.Length < fixedColumnWidth)
+                        line.Text = line.Text + new string(' ', fixedColumnWidth - line.Text.Length);
+
                     interlacedBuilder.TextFragments.Add(line);
+
                     // add spaces if we are requested to separate the blocks of text
                     if (xSpacing > 0)
                         interlacedBuilder.TextFragments.Add(new ColoredTextFragment(new string(' ', xSpacing), line.ForegroundColor, line.BackgroundColor));
