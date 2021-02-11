@@ -244,6 +244,19 @@ public class ConnectedUsersComponent : IComponent
 }
 ```
 
+To register a custom component, simply use:
+
+```csharp
+config.RegisterComponent<ConnectedUsersComponent>("MyCustomComponent");
+```
+
+and to use it:
+
+```csharp
+// this will add your custom component on the right side of a static row named "Header"
+console.WriteRow("Header", Component.Custom, "MyCustomComponent", ColumnLocation.Right);
+```
+
 ### Custom thread-management in a Custom Component
 
 ```csharp
