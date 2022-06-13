@@ -17,7 +17,8 @@ namespace AnyConsole
 
         internal ExtendedConsoleConfiguration Config { get; }
 
-        public StaticRowRenderer(ExtendedConsoleConfiguration config, ComponentRenderer componentRenderer, ConsoleOptions options)
+        public StaticRowRenderer(ExtendedConsoleConfiguration config, ComponentRenderer componentRenderer,
+            ConsoleOptions options)
         {
             Config = config;
             ComponentRenderer = componentRenderer;
@@ -86,8 +87,10 @@ namespace AnyConsole
                 if (contentHasUpdates)
                 {
                     // render the background for the row
-                    var foreColor = _row.ForegroundColor ?? _renderer.Config.ColorPalette.Get(_row.ForegroundColorPalette) ?? originalForeColor;
-                    var backColor = _row.BackgroundColor ?? _renderer.Config.ColorPalette.Get(_row.BackgroundColorPalette) ?? originalBackColor;
+                    var foreColor = _row.ForegroundColor ??
+                                    _renderer.Config.ColorPalette.Get(_row.ForegroundColorPalette) ?? originalForeColor;
+                    var backColor = _row.BackgroundColor ??
+                                    _renderer.Config.ColorPalette.Get(_row.BackgroundColorPalette) ?? originalBackColor;
                     ColorTracker.SetForeColor(foreColor);
                     ColorTracker.SetBackColor(backColor);
                     var y = GetYPosition(_row.Location, _row.Index, yPosition);
@@ -101,8 +104,16 @@ namespace AnyConsole
 
                     foreach (var item in _content)
                     {
-                        var itemColor = item.ForegroundColor ?? _renderer.Config.ColorPalette.Get(item.ForegroundColorPalette) ?? _row.ForegroundColor ?? _renderer.Config.ColorPalette.Get(_row.ForegroundColorPalette) ?? originalForeColor;
-                        var itemBackColor = item.BackgroundColor ?? _renderer.Config.ColorPalette.Get(item.BackgroundColorPalette) ?? _row.BackgroundColor ?? _renderer.Config.ColorPalette.Get(_row.BackgroundColorPalette) ?? originalBackColor;
+                        var itemColor = item.ForegroundColor ??
+                                        _renderer.Config.ColorPalette.Get(item.ForegroundColorPalette) ??
+                                        _row.ForegroundColor ??
+                                        _renderer.Config.ColorPalette.Get(_row.ForegroundColorPalette) ??
+                                        originalForeColor;
+                        var itemBackColor = item.BackgroundColor ??
+                                            _renderer.Config.ColorPalette.Get(item.BackgroundColorPalette) ??
+                                            _row.BackgroundColor ??
+                                            _renderer.Config.ColorPalette.Get(_row.BackgroundColorPalette) ??
+                                            originalBackColor;
                         ColorTracker.SetForeColor(itemColor);
                         ColorTracker.SetBackColor(itemBackColor);
 
@@ -111,7 +122,8 @@ namespace AnyConsole
                         if (item.ContentType == RowContent.ContentTypes.Static)
                             renderedContent = item.StaticContent;
                         else if (item.ContentType == RowContent.ContentTypes.Component)
-                            renderedContent = $"{item.Label}{_renderer.ComponentRenderer.Render(item.Component, item.ComponentName, item.ComponentParameter)}";
+                            renderedContent =
+                                $"{item.Label}{_renderer.ComponentRenderer.Render(item.Component, item.ComponentName, item.ComponentParameter)}";
 
                         if (item.Location == ColumnLocation.Right)
                             renderedContent = new string(' ', _renderer.ConsoleOptions.TextSpacing) + renderedContent;
@@ -129,10 +141,11 @@ namespace AnyConsole
                             _rightMargin += renderedContent.Length;
                         else
                             _leftMargin += renderedContent.Length;
-                        item.RenderCount++;
+                        item.IncrementRenderCount();
                     }
                 }
             }
+
             ColorTracker.SetForeColor(originalForeColor);
             ColorTracker.SetBackColor(originalBackColor);
 
@@ -155,6 +168,7 @@ namespace AnyConsole
                 case ColumnLocation.Center:
                     break;
             }
+
             return x;
         }
 
@@ -173,6 +187,7 @@ namespace AnyConsole
                 case RowLocation.Middle:
                     break;
             }
+
             return y;
         }
     }
