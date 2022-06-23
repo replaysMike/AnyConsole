@@ -29,7 +29,7 @@ namespace AnyConsole
 
         public ulong IncrementRenderCount()
         {
-            if (RenderCount < long.MaxValue)
+            if (RenderCount < ulong.MaxValue)
             {
                 RenderCount += 1;
             }
